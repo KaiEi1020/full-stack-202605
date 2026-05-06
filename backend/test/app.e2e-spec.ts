@@ -13,6 +13,7 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.enableCors({ origin: true });
     await app.init();
   });
 
@@ -21,6 +22,49 @@ describe('AppController (e2e)', () => {
       .get('/')
       .expect(200)
       .expect('Hello World!');
+  });
+
+  it('/graphql (POST) returns users', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/graphql')
+      .send({
+        query: '{ users { id name email } }',
+      })
+      .expect(200);
+
+    expect(response.body.data.users).toEqual([
+      { id: '1', name: 'Ada Lovelace', email: 'ada@example.com' },
+      { id: '2', name: 'Grace Hopper', email: 'grace@example.com' },
+      { id: '3', name: 'Linus Torvalds', email: 'linus@example.com' },
+    ]);
+  });
+
+  it('/graphql (POST) returns a single user by id', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/graphql')
+      .send({
+        query: 'query ($id: String!) { user(id: $id) { id name email } }',
+        variables: { id: '2' },
+      })
+      .expect(200);
+
+    expect(response.body.data.user).toEqual({
+      id: '2',
+      name: 'Grace Hopper',
+      email: 'grace@example.com',
+    });
+  });
+
+  it('/graphql (POST) returns null for unknown user id', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/graphql')
+      .send({
+        query: 'query ($id: String!) { user(id: $id) { id name email } }',
+        variables: { id: '999' },
+      })
+      .expect(200);
+
+    expect(response.body.data.user).toBeNull();
   });
 
   afterEach(async () => {
