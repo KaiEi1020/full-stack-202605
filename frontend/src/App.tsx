@@ -1,122 +1,88 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect, useState } from 'react';
+import { GraphqlDemoPage } from './pages/GraphqlDemoPage';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+type Pathname = '/' | '/graphql-demo' | 'not-found';
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+function getPathname(pathname: string): Pathname {
+  if (pathname === '/') {
+    return '/';
+  }
 
-      <div className="ticks"></div>
+  if (pathname === '/graphql-demo') {
+    return '/graphql-demo';
+  }
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+  return 'not-found';
 }
 
-export default App
+function navigate(pathname: '/' | '/graphql-demo') {
+  window.history.pushState({}, '', pathname);
+  window.dispatchEvent(new PopStateEvent('popstate'));
+}
+
+function App() {
+  const [pathname, setPathname] = useState<Pathname>(() => getPathname(window.location.pathname));
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setPathname(getPathname(window.location.pathname));
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  return (
+    <div className="app-shell">
+      <header className="app-header">
+        <div>
+          <p className="eyebrow">Full Stack Demo</p>
+          <h1>GraphQL + User Module</h1>
+        </div>
+        <nav className="nav-links" aria-label="Primary">
+          <button type="button" className={pathname === '/' ? 'nav-link is-active' : 'nav-link'} onClick={() => navigate('/')}>
+            首页
+          </button>
+          <button
+            type="button"
+            className={pathname === '/graphql-demo' ? 'nav-link is-active' : 'nav-link'}
+            onClick={() => navigate('/graphql-demo')}
+          >
+            GraphQL Demo
+          </button>
+        </nav>
+      </header>
+
+      {pathname === '/' ? (
+        <main className="page-shell">
+          <section className="panel hero-panel">
+            <p className="eyebrow">Overview</p>
+            <h2>前后端联调示例</h2>
+            <p className="lead">后端提供 GraphQL 用户查询接口，前端通过 Apollo Client 发起请求并展示结果。</p>
+            <button type="button" className="primary-action" onClick={() => navigate('/graphql-demo')}>
+              打开 GraphQL Demo
+            </button>
+          </section>
+        </main>
+      ) : null}
+
+      {pathname === '/graphql-demo' ? <GraphqlDemoPage /> : null}
+
+      {pathname === 'not-found' ? (
+        <main className="page-shell">
+          <section className="panel">
+            <p className="eyebrow">404</p>
+            <h2>页面不存在</h2>
+            <p className="lead">这个路径没有对应页面，请返回首页继续查看示例。</p>
+            <button type="button" className="primary-action" onClick={() => navigate('/')}>
+              返回首页
+            </button>
+          </section>
+        </main>
+      ) : null}
+    </div>
+  );
+}
+
+export default App;
