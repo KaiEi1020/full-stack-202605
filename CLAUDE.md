@@ -4,42 +4,51 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository shape
 
-This repository currently contains two separate Node/TypeScript apps:
+This repository contains two Node/TypeScript apps managed by a root pnpm workspace:
 
 - `frontend/`: Vite + React 19 single-page app
 - `backend/`: NestJS 11 HTTP API
 
-They are not wired together through a root workspace tool. Run package-manager commands from the relevant app directory.
+Install dependencies from the repository root with `pnpm install`. Run app-specific commands from the root with `pnpm --filter <package> <script>`.
 
 ## Commands
+
+### Root workspace
+
+| Task | Command |
+| --- | --- |
+| Install all dependencies | `pnpm install` |
+| Start frontend dev server | `pnpm --filter frontend dev` |
+| Start backend dev server | `pnpm --filter backend start:dev` |
+| Build all apps | `pnpm -r build` |
+| Lint all apps | `pnpm -r lint` |
+| Run backend tests | `pnpm --filter backend test` |
 
 ### Frontend (`frontend/`)
 
 | Task | Command |
 | --- | --- |
-| Install dependencies | `pnpm install` |
-| Start dev server | `pnpm dev` |
-| Build production bundle | `pnpm build` |
-| Lint | `pnpm lint` |
-| Preview production build | `pnpm preview` |
+| Start dev server | `pnpm --filter frontend dev` |
+| Build production bundle | `pnpm --filter frontend build` |
+| Lint | `pnpm --filter frontend lint` |
+| Preview production build | `pnpm --filter frontend preview` |
 
 ### Backend (`backend/`)
 
 | Task | Command |
 | --- | --- |
-| Install dependencies | `pnpm install` |
-| Start dev server with watch | `pnpm start:dev` |
-| Start once | `pnpm start` |
-| Build | `pnpm build` |
-| Lint | `pnpm lint` |
-| Format | `pnpm format` |
-| Run all unit tests | `pnpm test` |
-| Run tests in watch mode | `pnpm test:watch` |
-| Run coverage | `pnpm test:cov` |
-| Run e2e tests | `pnpm test:e2e` |
-| Debug tests | `pnpm test:debug` |
-| Run a single Jest spec | `pnpm test -- app.controller.spec.ts` |
-| Run a single e2e spec | `pnpm test:e2e -- app.e2e-spec.ts` |
+| Start dev server with watch | `pnpm --filter backend start:dev` |
+| Start once | `pnpm --filter backend start` |
+| Build | `pnpm --filter backend build` |
+| Lint | `pnpm --filter backend lint` |
+| Format | `pnpm --filter backend format` |
+| Run all unit tests | `pnpm --filter backend test` |
+| Run tests in watch mode | `pnpm --filter backend test:watch` |
+| Run coverage | `pnpm --filter backend test:cov` |
+| Run e2e tests | `pnpm --filter backend test:e2e` |
+| Debug tests | `pnpm --filter backend test:debug` |
+| Run a single Jest spec | `pnpm --filter backend test -- app.controller.spec.ts` |
+| Run a single e2e spec | `pnpm --filter backend test:e2e -- app.e2e-spec.ts` |
 
 ## Architecture
 
@@ -81,6 +90,6 @@ Important constraints from current config:
 
 ## Working assumptions for future changes
 
-- Treat `frontend/` and `backend/` as independently runnable apps unless a root-level workspace is introduced later
+- Treat `frontend/` and `backend/` as separate runnable apps inside the same pnpm workspace
 - If a task mentions “the app” without clarification, verify whether it refers to the React frontend or the Nest backend
 - For frontend changes, validate behavior in a browser with the Vite dev server; for backend changes, prefer unit or e2e coverage depending on whether HTTP behavior changed
