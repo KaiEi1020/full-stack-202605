@@ -1,8 +1,4 @@
-## Purpose
-
-TBD
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: 后端必须提供用户查询模块
 系统 MUST 在后端提供独立的用户查询模块，并根据业务复杂度选择 DDD 实现或普通 service 实现。
