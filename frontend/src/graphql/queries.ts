@@ -6,6 +6,7 @@ export const GET_USERS = gql`
       id
       name
       email
+      phone
     }
   }
 `;
@@ -16,6 +17,18 @@ export const GET_USER = gql`
       id
       name
       email
+      phone
+    }
+  }
+`;
+
+export const REGISTER_USER = gql`
+  mutation RegisterUser($input: RegisterUserInput!) {
+    registerUser(input: $input) {
+      id
+      name
+      email
+      phone
     }
   }
 `;

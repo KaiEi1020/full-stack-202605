@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { GraphqlDemoPage } from './pages/GraphqlDemoPage';
+import { UserRegistrationPage } from './pages/UserRegistrationPage';
 import './App.css';
 
-type Pathname = '/' | '/graphql-demo' | 'not-found';
+type Pathname = '/' | '/graphql-demo' | '/register' | 'not-found';
 
 function getPathname(pathname: string): Pathname {
   if (pathname === '/') {
@@ -13,10 +14,14 @@ function getPathname(pathname: string): Pathname {
     return '/graphql-demo';
   }
 
+  if (pathname === '/register') {
+    return '/register';
+  }
+
   return 'not-found';
 }
 
-function navigate(pathname: '/' | '/graphql-demo') {
+function navigate(pathname: '/' | '/graphql-demo' | '/register') {
   window.history.pushState({}, '', pathname);
   window.dispatchEvent(new PopStateEvent('popstate'));
 }
@@ -51,6 +56,13 @@ function App() {
           >
             GraphQL Demo
           </button>
+          <button
+            type="button"
+            className={pathname === '/register' ? 'nav-link is-active' : 'nav-link'}
+            onClick={() => navigate('/register')}
+          >
+            用户注册
+          </button>
         </nav>
       </header>
 
@@ -59,15 +71,21 @@ function App() {
           <section className="panel hero-panel">
             <p className="eyebrow">Overview</p>
             <h2>前后端联调示例</h2>
-            <p className="lead">后端提供 GraphQL 用户查询接口，前端通过 Apollo Client 发起请求并展示结果。</p>
-            <button type="button" className="primary-action" onClick={() => navigate('/graphql-demo')}>
-              打开 GraphQL Demo
-            </button>
+            <p className="lead">后端提供 GraphQL 用户查询与注册接口，前端通过 Apollo Client 发起请求并展示结果。</p>
+            <div className="hero-actions">
+              <button type="button" className="primary-action" onClick={() => navigate('/graphql-demo')}>
+                打开 GraphQL Demo
+              </button>
+              <button type="button" className="primary-action secondary-action" onClick={() => navigate('/register')}>
+                打开注册页面
+              </button>
+            </div>
           </section>
         </main>
       ) : null}
 
       {pathname === '/graphql-demo' ? <GraphqlDemoPage /> : null}
+      {pathname === '/register' ? <UserRegistrationPage /> : null}
 
       {pathname === 'not-found' ? (
         <main className="page-shell">

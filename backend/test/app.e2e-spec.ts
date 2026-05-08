@@ -22,9 +22,9 @@ describe('AppController (e2e)', () => {
     await prisma.user.deleteMany();
     await prisma.user.createMany({
       data: [
-        { id: '1', name: 'Ada Lovelace', email: 'ada@example.com' },
-        { id: '2', name: 'Grace Hopper', email: 'grace@example.com' },
-        { id: '3', name: 'Linus Torvalds', email: 'linus@example.com' },
+        { id: '1', name: 'Ada Lovelace', email: 'ada@example.com', phone: '13800000001' },
+        { id: '2', name: 'Grace Hopper', email: 'grace@example.com', phone: '13800000002' },
+        { id: '3', name: 'Linus Torvalds', email: 'linus@example.com', phone: '13800000003' },
       ],
     });
   });
@@ -40,29 +40,14 @@ describe('AppController (e2e)', () => {
     const response = await request(app.getHttpServer())
       .post('/graphql')
       .send({
-        query: '{ users { id name email } }',
+        query: '{ users { id name email phone } }',
       })
       .expect(200);
 
     expect(response.body.data.users).toEqual([
-      { id: '1', name: 'Ada Lovelace', email: 'ada@example.com' },
-      { id: '2', name: 'Grace Hopper', email: 'grace@example.com' },
-      { id: '3', name: 'Linus Torvalds', email: 'linus@example.com' },
-    ]);
-  });
-
-  it('/graphql (POST) returns users through the ddd path', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/graphql')
-      .send({
-        query: 'query { users(mode: "ddd") { id name email } }',
-      })
-      .expect(200);
-
-    expect(response.body.data.users).toEqual([
-      { id: '1', name: 'Ada Lovelace', email: 'ada@example.com' },
-      { id: '2', name: 'Grace Hopper', email: 'grace@example.com' },
-      { id: '3', name: 'Linus Torvalds', email: 'linus@example.com' },
+      { id: '1', name: 'Ada Lovelace', email: 'ada@example.com', phone: '13800000001' },
+      { id: '2', name: 'Grace Hopper', email: 'grace@example.com', phone: '13800000002' },
+      { id: '3', name: 'Linus Torvalds', email: 'linus@example.com', phone: '13800000003' },
     ]);
   });
 
@@ -70,7 +55,7 @@ describe('AppController (e2e)', () => {
     const response = await request(app.getHttpServer())
       .post('/graphql')
       .send({
-        query: 'query ($id: String!) { user(id: $id) { id name email } }',
+        query: 'query ($id: String!) { user(id: $id) { id name email phone } }',
         variables: { id: '2' },
       })
       .expect(200);
@@ -79,6 +64,7 @@ describe('AppController (e2e)', () => {
       id: '2',
       name: 'Grace Hopper',
       email: 'grace@example.com',
+      phone: '13800000002',
     });
   });
 
@@ -86,12 +72,38 @@ describe('AppController (e2e)', () => {
     const response = await request(app.getHttpServer())
       .post('/graphql')
       .send({
-        query: 'query ($id: String!) { user(id: $id) { id name email } }',
+        query: 'query ($id: String!) { user(id: $id) { id name email phone } }',
         variables: { id: '999' },
       })
       .expect(200);
 
     expect(response.body.data.user).toBeNull();
+  });
+
+  it('/graphql (POST) registers a user', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/graphql')
+      .send({
+        query: 'mutation ($input: RegisterUserInput!) { registerUser(input: $input) { id name email phone } }',
+        variables: { input: { name: 'New User', phone: '13800000009' } },
+      })
+      .expect(200);
+
+    expect(response.body.data.registerUser.name).toBe('New User');
+    expect(response.body.data.registerUser.phone).toBe('13800000009');
+    expect(response.body.data.registerUser.email).toBe('13800000009@example.com');
+  });
+
+  it('/graphql (POST) rejects duplicate phone registration', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/graphql')
+      .send({
+        query: 'mutation ($input: RegisterUserInput!) { registerUser(input: $input) { id name email phone } }',
+        variables: { input: { name: 'Duplicate User', phone: '13800000002' } },
+      })
+      .expect(200);
+
+    expect(response.body.errors[0].message).toBe('手机号已存在');
   });
 
   afterEach(async () => {

@@ -7,6 +7,7 @@ type User = {
   id: string;
   name: string;
   email: string;
+  phone: string;
 };
 
 type UsersQueryData = {
@@ -68,6 +69,10 @@ export function GraphqlDemoPage() {
                     <dt>Email</dt>
                     <dd>{user.email}</dd>
                   </div>
+                  <div>
+                    <dt>Phone</dt>
+                    <dd>{user.phone}</dd>
+                  </div>
                 </dl>
               </li>
             ))}
@@ -100,6 +105,7 @@ export function GraphqlDemoPage() {
             <h3>{userResult.data.user.name}</h3>
             <p>ID: {userResult.data.user.id}</p>
             <p>Email: {userResult.data.user.email}</p>
+            <p>Phone: {userResult.data.user.phone}</p>
           </article>
         ) : null}
       </section>

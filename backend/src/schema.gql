@@ -6,9 +6,19 @@ type User {
   id: String!
   name: String!
   email: String!
+  phone: String!
 }
 
 type Query {
   users: [User!]!
   user(id: String!): User
+}
+
+type Mutation {
+  registerUser(input: RegisterUserInput!): User!
+}
+
+input RegisterUserInput {
+  name: String!
+  phone: String!
 }

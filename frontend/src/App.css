@@ -21,6 +21,7 @@
 
 .nav-link,
 .primary-action,
+.secondary-action,
 .lookup-row button {
   border: 1px solid transparent;
   background: var(--accent);
@@ -75,6 +76,19 @@
 
 .lead {
   margin-top: 12px;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.secondary-action {
+  background: transparent;
+  color: var(--text-h);
+  border: 1px solid var(--border);
 }
 
 .section-heading {

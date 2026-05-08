@@ -2,7 +2,7 @@ import { PrismaUserRepository } from '../infrastructure/prisma-user.repository';
 import { UserQueryService } from './user-query.service';
 
 describe('UserQueryService', () => {
-  const users = [{ id: '1', name: 'Ada Lovelace', email: 'ada@example.com' }];
+  const users = [{ id: '1', name: 'Ada Lovelace', email: 'ada@example.com', phone: '13800000000' }];
   const userRepository = {
     findAll: jest.fn().mockResolvedValue(users),
     findById: jest.fn().mockResolvedValue(users[0]),

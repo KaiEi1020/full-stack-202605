@@ -11,9 +11,9 @@ async function main() {
   await prisma.user.deleteMany();
   await prisma.user.createMany({
     data: [
-      { id: '1', name: 'Ada Lovelace', email: 'ada@example.com' },
-      { id: '2', name: 'Grace Hopper', email: 'grace@example.com' },
-      { id: '3', name: 'Linus Torvalds', email: 'linus@example.com' },
+      { id: '1', name: 'Ada Lovelace', email: 'ada@example.com', phone: '13800000001' },
+      { id: '2', name: 'Grace Hopper', email: 'grace@example.com', phone: '13800000002' },
+      { id: '3', name: 'Linus Torvalds', email: 'linus@example.com', phone: '13800000003' },
     ],
   });
 }
