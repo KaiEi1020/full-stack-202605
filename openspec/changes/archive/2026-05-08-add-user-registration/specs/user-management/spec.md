@@ -1,8 +1,4 @@
-## Purpose
-
-TBD
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: 后端必须提供独立的用户查询模块
 系统 MUST 在后端提供独立的用户模块，并通过查询服务、注册服务与仓储协作组织用户能力。
