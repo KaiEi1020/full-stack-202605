@@ -1,0 +1,29 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3000}
+      DATABASE_URL: ${DATABASE_URL:-file:/app/data/dev.db}
+      STORAGE_DIR: ${STORAGE_DIR:-/app/storage}
+      GRAPHQL_SCHEMA_PATH: ${GRAPHQL_SCHEMA_PATH:-/app/schema.gql}
+      BIGMODEL_API_KEY: ${BIGMODEL_API_KEY:-}
+      BIGMODEL_MODEL: ${BIGMODEL_MODEL:-glm-4.5-air}
+    volumes:
+      - ./data:/app/data
+      - ./storage:/app/storage
+    expose:
+      - "3000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
