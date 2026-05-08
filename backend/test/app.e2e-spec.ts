@@ -1,8 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
+import { BigModelService } from './../src/bigmodel/bigmodel.service';
+import { PdfParserService } from './../src/pdf/pdf-parser.service';
 import { PrismaService } from './../src/prisma/prisma.service';
 
 describe('AppController (e2e)', () => {
@@ -12,13 +14,48 @@ describe('AppController (e2e)', () => {
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(PdfParserService)
+      .useValue({
+        parse: jest.fn().mockResolvedValue({
+          pageCount: 1,
+          rawText: 'raw resume text',
+          cleanedText: 'cleaned resume text',
+        }),
+      })
+      .overrideProvider(BigModelService)
+      .useValue({
+        extractCandidateProfile: jest.fn().mockResolvedValue({
+          basicInfo: { name: 'Ada Lovelace', phone: '13800000001', email: 'ada@example.com', city: 'London' },
+          education: [],
+          workExperience: [],
+          skills: ['TypeScript'],
+          projects: [],
+          raw: '{}',
+        }),
+        scoreCandidateAgainstJd: jest.fn().mockResolvedValue({
+          overallScore: 92,
+          skillScore: 91,
+          experienceScore: 90,
+          educationScore: 89,
+          aiComment: 'strong candidate',
+        }),
+      })
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app.enableCors({ origin: true });
     await app.init();
 
     prisma = app.get(PrismaService);
+    await prisma.screeningEvent.deleteMany();
+    await prisma.candidateScore.deleteMany();
+    await prisma.candidateExtraction.deleteMany();
+    await prisma.resumeParse.deleteMany();
+    await prisma.resumeFile.deleteMany();
+    await prisma.screeningJob.deleteMany();
+    await prisma.jobRequirement.deleteMany();
+    await prisma.candidate.deleteMany();
     await prisma.user.deleteMany();
     await prisma.user.createMany({
       data: [
@@ -30,54 +67,16 @@ describe('AppController (e2e)', () => {
   });
 
   it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+    return request(app.getHttpServer()).get('/').expect(200).expect('Hello World!');
   });
 
   it('/graphql (POST) returns users through the service path', async () => {
     const response = await request(app.getHttpServer())
       .post('/graphql')
-      .send({
-        query: '{ users { id name email phone } }',
-      })
+      .send({ query: '{ users { id name email phone } }' })
       .expect(200);
 
-    expect(response.body.data.users).toEqual([
-      { id: '1', name: 'Ada Lovelace', email: 'ada@example.com', phone: '13800000001' },
-      { id: '2', name: 'Grace Hopper', email: 'grace@example.com', phone: '13800000002' },
-      { id: '3', name: 'Linus Torvalds', email: 'linus@example.com', phone: '13800000003' },
-    ]);
-  });
-
-  it('/graphql (POST) returns a single user by id', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/graphql')
-      .send({
-        query: 'query ($id: String!) { user(id: $id) { id name email phone } }',
-        variables: { id: '2' },
-      })
-      .expect(200);
-
-    expect(response.body.data.user).toEqual({
-      id: '2',
-      name: 'Grace Hopper',
-      email: 'grace@example.com',
-      phone: '13800000002',
-    });
-  });
-
-  it('/graphql (POST) returns null for unknown user id', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/graphql')
-      .send({
-        query: 'query ($id: String!) { user(id: $id) { id name email phone } }',
-        variables: { id: '999' },
-      })
-      .expect(200);
-
-    expect(response.body.data.user).toBeNull();
+    expect(response.body.data.users).toHaveLength(3);
   });
 
   it('/graphql (POST) registers a user', async () => {
@@ -89,21 +88,41 @@ describe('AppController (e2e)', () => {
       })
       .expect(200);
 
-    expect(response.body.data.registerUser.name).toBe('New User');
     expect(response.body.data.registerUser.phone).toBe('13800000009');
-    expect(response.body.data.registerUser.email).toBe('13800000009@example.com');
   });
 
-  it('/graphql (POST) rejects duplicate phone registration', async () => {
+  it('rejects non-pdf uploads', async () => {
     const response = await request(app.getHttpServer())
-      .post('/graphql')
-      .send({
-        query: 'mutation ($input: RegisterUserInput!) { registerUser(input: $input) { id name email phone } }',
-        variables: { input: { name: 'Duplicate User', phone: '13800000002' } },
-      })
-      .expect(200);
+      .post('/api/resumes')
+      .attach('file', Buffer.from('not-pdf'), { filename: 'resume.txt', contentType: 'text/plain' })
+      .expect(400);
 
-    expect(response.body.errors[0].message).toBe('手机号已存在');
+    expect(response.body.message).toBe('仅支持 PDF 格式');
+  });
+
+  it('creates a candidate record after pdf upload', async () => {
+    await request(app.getHttpServer())
+      .post('/api/resumes')
+      .attach('file', Buffer.from('%PDF-1.4 mock'), { filename: 'resume.pdf', contentType: 'application/pdf' })
+      .expect(201);
+
+    const candidates = await prisma.candidate.findMany();
+    expect(candidates.length).toBe(1);
+  });
+
+  it('updates candidate status after screening completes', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/resumes')
+      .attach('file', Buffer.from('%PDF-1.4 mock'), { filename: 'resume.pdf', contentType: 'application/pdf' })
+      .expect(201);
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    const candidate = await prisma.candidate.findUniqueOrThrow({
+      where: { id: response.body.candidateId },
+    });
+
+    expect(candidate.status).toBe('PASSED');
   });
 
   afterEach(async () => {

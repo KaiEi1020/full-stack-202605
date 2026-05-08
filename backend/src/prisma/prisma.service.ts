@@ -1,6 +1,10 @@
+import { config as loadEnv } from 'dotenv';
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import { PrismaClient } from '@prisma/client';
+import { join } from 'node:path';
+
+loadEnv({ path: join(process.cwd(), '.env') });
 
 @Injectable()
 export class PrismaService
