@@ -59,7 +59,8 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  :root[data-theme='dark'] html {
+  html:has(:root[data-theme='dark']),
+  :root[data-theme='dark'] {
     background:
       radial-gradient(circle at top, rgba(139, 92, 246, 0.16), transparent 28%),
       linear-gradient(180deg, #09090f 0%, #111827 46%, #09090f 100%);
