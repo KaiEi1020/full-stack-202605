@@ -7,7 +7,10 @@
     "dev:backend": "pnpm --filter backend start:dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
-    "test": "pnpm --filter backend test"
+    "test": "pnpm --filter backend test",
+    "deploy:cvm:pack": "bash ./deploy-cvm.sh pack",
+    "deploy:cvm:transfer": "bash ./deploy-cvm.sh transfer",
+    "deploy:cvm": "bash ./deploy-cvm.sh all"
   },
   "packageManager": "pnpm@10.6.5",
   "pnpm": {

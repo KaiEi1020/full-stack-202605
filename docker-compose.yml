@@ -1,8 +1,6 @@
 services:
   backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    image: resume-backend:latest
     env_file:
       - .env
     environment:
@@ -20,9 +18,7 @@ services:
       - "3000"
 
   frontend:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
+    image: resume-frontend:latest
     depends_on:
       - backend
     ports:
