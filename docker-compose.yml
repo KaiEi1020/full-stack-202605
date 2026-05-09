@@ -23,3 +23,7 @@ services:
       - backend
     ports:
       - "80:80"
+
+networks:
+  default:
+    name: resume-app-network

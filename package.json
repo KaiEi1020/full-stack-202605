@@ -8,15 +8,9 @@
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "test": "pnpm --filter backend test",
-    "deploy:cvm:pack": "bash ./deploy-cvm.sh pack",
-    "deploy:cvm:transfer": "bash ./deploy-cvm.sh transfer",
+    "deploy:cvm:pack": "node ./scripts/pack-cvm.mjs",
+    "deploy:cvm:transfer": "node ./scripts/transfer-cvm.mjs",
     "deploy:cvm": "bash ./deploy-cvm.sh all"
   },
-  "packageManager": "pnpm@10.6.5",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "prisma",
-      "better-sqlite3"
-    ]
-  }
+  "packageManager": "pnpm@10.6.5"
 }

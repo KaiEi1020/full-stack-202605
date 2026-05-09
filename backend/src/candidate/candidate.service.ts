@@ -1,48 +1,126 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { PrismaService } from '../prisma/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { JobRequirementEntity, ResumeEntity } from '../database';
 import { BigModelService } from '../bigmodel/bigmodel.service';
-import { ScoreCandidateInput } from './dto/score-candidate.input';
 import { SaveCandidateCorrectionInput } from './dto/save-candidate-correction.input';
+import { ScoreCandidateInput } from './dto/score-candidate.input';
 import { UpdateCandidateStatusInput } from './dto/update-candidate-status.input';
 import { UpsertJobRequirementInput } from './dto/upsert-job-requirement.input';
 
 @Injectable()
 export class CandidateService {
   constructor(
-    private readonly prisma: PrismaService,
+    @InjectRepository(ResumeEntity)
+    private readonly resumeRepository: Repository<ResumeEntity>,
+    @InjectRepository(JobRequirementEntity)
+    private readonly jobRequirementRepository: Repository<JobRequirementEntity>,
     private readonly bigModelService: BigModelService,
   ) {}
 
   async listCandidates() {
-    const items = await this.prisma.candidate.findMany({
-      include: { resumeFile: true, resumeParse: true, extraction: true, scores: { orderBy: { scoredAt: 'desc' } } },
-      orderBy: { createdAt: 'desc' },
-    });
-    return items.map((item) => ({
-      id: item.id,
-      name: item.name,
-      phone: item.phone,
-      email: item.email,
-      city: item.city,
-      status: item.status,
-      resumeSummary: item.resumeSummary,
-      resumeFilePath: item.resumeFile?.storagePath ?? null,
-      cleanedText: item.resumeParse?.cleanedText ?? null,
-      skills: item.extraction ? JSON.parse(item.extraction.skillsJson) : [],
-      scores: item.scores,
-      createdAt: item.createdAt,
-    }));
+    const items = await this.resumeRepository.find({ order: { createdAt: 'desc' } });
+    return items.map((item) => this.toCandidateView(item));
   }
 
   async getCandidate(id: string) {
-    const item = await this.prisma.candidate.findUnique({
-      where: { id },
-      include: { resumeFile: true, resumeParse: true, extraction: true, scores: { orderBy: { scoredAt: 'desc' } } },
-    });
+    const item = await this.resumeRepository.findOne({ where: { id } });
     if (!item) {
       return null;
     }
+    return this.toCandidateView(item);
+  }
+
+  async updateStatus(input: UpdateCandidateStatusInput) {
+    const item = await this.resumeRepository.findOne({ where: { id: input.candidateId } });
+    if (!item) {
+      throw new NotFoundException('简历不存在');
+    }
+    item.status = input.status;
+    await this.resumeRepository.save(item);
+    return this.getCandidateOrThrow(input.candidateId);
+  }
+
+  async saveCorrection(input: SaveCandidateCorrectionInput) {
+    const item = await this.resumeRepository.findOne({ where: { id: input.candidateId } });
+    if (!item) {
+      throw new NotFoundException('简历不存在');
+    }
+    item.correctedJson = input.correctedJson;
+    await this.resumeRepository.save(item);
+    return this.getCandidateOrThrow(input.candidateId);
+  }
+
+  async upsertJobRequirement(input: UpsertJobRequirementInput) {
+    const id = input.id ?? randomUUID();
+    const entity = this.jobRequirementRepository.create({
+      id,
+      title: input.title,
+      description: input.description,
+      requiredSkillsJson: JSON.stringify(input.requiredSkills),
+      preferredSkillsJson: JSON.stringify(input.preferredSkills),
+    });
+    await this.jobRequirementRepository.save(entity);
+    return this.toJobRequirementView(entity);
+  }
+
+  async listJobRequirements() {
+    const items = await this.jobRequirementRepository.find({ order: { updatedAt: 'desc' } });
+    return items.map((item) => this.toJobRequirementView(item));
+  }
+
+  async scoreCandidate(input: ScoreCandidateInput) {
+    const resume = await this.resumeRepository.findOne({ where: { id: input.candidateId } });
+    if (!resume || !resume.cleanedText) {
+      throw new NotFoundException('简历或解析结果不存在');
+    }
+
+    const result = await this.bigModelService.scoreCandidateAgainstJd(
+      resume.cleanedText,
+      input.jdText,
+      input.requiredSkills,
+      input.preferredSkills,
+    );
+
+    const history = this.parseJsonArray(resume.scoreHistoryJson);
+    history.unshift({
+      id: randomUUID(),
+      overallScore: result.overallScore,
+      skillScore: result.skillScore,
+      experienceScore: result.experienceScore,
+      educationScore: result.educationScore,
+      aiComment: result.aiComment,
+      scoredAt: new Date().toISOString(),
+      jobRequirementId: input.jobRequirementId ?? null,
+      jdText: input.jdText,
+      requiredSkills: input.requiredSkills,
+      preferredSkills: input.preferredSkills,
+    });
+
+    resume.jdText = input.jdText;
+    resume.requiredSkillsJson = JSON.stringify(input.requiredSkills);
+    resume.preferredSkillsJson = JSON.stringify(input.preferredSkills);
+    resume.overallScore = result.overallScore;
+    resume.skillScore = result.skillScore;
+    resume.experienceScore = result.experienceScore;
+    resume.educationScore = result.educationScore;
+    resume.aiComment = result.aiComment;
+    resume.scoreHistoryJson = JSON.stringify(history);
+    await this.resumeRepository.save(resume);
+
+    return this.getCandidateOrThrow(input.candidateId);
+  }
+
+  private async getCandidateOrThrow(id: string) {
+    const candidate = await this.getCandidate(id);
+    if (!candidate) {
+      throw new NotFoundException('简历不存在');
+    }
+    return candidate;
+  }
+
+  private toCandidateView(item: ResumeEntity) {
     return {
       id: item.id,
       name: item.name,
@@ -51,100 +129,33 @@ export class CandidateService {
       city: item.city,
       status: item.status,
       resumeSummary: item.resumeSummary,
-      resumeFilePath: item.resumeFile?.storagePath ?? null,
-      cleanedText: item.resumeParse?.cleanedText ?? null,
-      skills: item.extraction ? JSON.parse(item.extraction.skillsJson) : [],
-      scores: item.scores,
+      resumeFilePath: item.storagePath,
+      cleanedText: item.cleanedText,
+      skills: this.parseJsonArray(item.skillsJson),
+      scores: this.parseJsonArray(item.scoreHistoryJson),
       createdAt: item.createdAt,
     };
   }
 
-  async updateStatus(input: UpdateCandidateStatusInput) {
-    await this.prisma.candidate.update({ where: { id: input.candidateId }, data: { status: input.status } });
-    return this.getCandidateOrThrow(input.candidateId);
-  }
-
-  async saveCorrection(input: SaveCandidateCorrectionInput) {
-    await this.prisma.candidateExtraction.update({
-      where: { candidateId: input.candidateId },
-      data: { correctedJson: input.correctedJson },
-    });
-    return this.getCandidateOrThrow(input.candidateId);
-  }
-
-  async upsertJobRequirement(input: UpsertJobRequirementInput) {
-    return this.prisma.jobRequirement.upsert({
-      where: { id: input.id ?? '__new__' },
-      update: {
-        title: input.title,
-        description: input.description,
-        requiredSkillsJson: JSON.stringify(input.requiredSkills),
-        preferredSkillsJson: JSON.stringify(input.preferredSkills),
-      },
-      create: {
-        id: randomUUID(),
-        title: input.title,
-        description: input.description,
-        requiredSkillsJson: JSON.stringify(input.requiredSkills),
-        preferredSkillsJson: JSON.stringify(input.preferredSkills),
-      },
-    }).then((item) => ({
+  private toJobRequirementView(item: JobRequirementEntity) {
+    return {
       id: item.id,
       title: item.title,
       description: item.description,
-      requiredSkills: JSON.parse(item.requiredSkillsJson),
-      preferredSkills: JSON.parse(item.preferredSkillsJson),
-    }));
+      requiredSkills: this.parseJsonArray(item.requiredSkillsJson),
+      preferredSkills: this.parseJsonArray(item.preferredSkillsJson),
+    };
   }
 
-  async listJobRequirements() {
-    const items = await this.prisma.jobRequirement.findMany({ orderBy: { updatedAt: 'desc' } });
-    return items.map((item) => ({
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      requiredSkills: JSON.parse(item.requiredSkillsJson),
-      preferredSkills: JSON.parse(item.preferredSkillsJson),
-    }));
-  }
-
-  async scoreCandidate(input: ScoreCandidateInput) {
-    const candidate = await this.prisma.candidate.findUnique({
-      where: { id: input.candidateId },
-      include: { resumeParse: true },
-    });
-    if (!candidate || !candidate.resumeParse) {
-      throw new NotFoundException('候选人或解析结果不存在');
+  private parseJsonArray(value: string | null) {
+    if (!value) {
+      return [];
     }
-    const result = await this.bigModelService.scoreCandidateAgainstJd(
-      candidate.resumeParse.cleanedText,
-      input.jdText,
-      input.requiredSkills,
-      input.preferredSkills,
-    );
-    await this.prisma.candidateScore.create({
-      data: {
-        id: randomUUID(),
-        candidateId: input.candidateId,
-        jobRequirementId: input.jobRequirementId ?? null,
-        jdText: input.jdText,
-        requiredSkillsJson: JSON.stringify(input.requiredSkills),
-        preferredSkillsJson: JSON.stringify(input.preferredSkills),
-        overallScore: result.overallScore,
-        skillScore: result.skillScore,
-        experienceScore: result.experienceScore,
-        educationScore: result.educationScore,
-        aiComment: result.aiComment,
-      },
-    });
-    return this.getCandidateOrThrow(input.candidateId);
-  }
-
-  private async getCandidateOrThrow(id: string) {
-    const candidate = await this.getCandidate(id);
-    if (!candidate) {
-      throw new NotFoundException('候选人不存在');
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
     }
-    return candidate;
   }
 }

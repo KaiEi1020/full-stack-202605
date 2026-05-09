@@ -1,6 +1,6 @@
 import { ConflictException } from '@nestjs/common';
 import { RegisterUserService } from './register-user.service';
-import { PrismaUserRepository } from '../infrastructure/prisma-user.repository';
+import { UserRepository } from '../domain/user.repository';
 import { SmsNotificationPublisher } from '../infrastructure/sms-notification.publisher';
 
 describe('RegisterUserService', () => {
@@ -14,7 +14,7 @@ describe('RegisterUserService', () => {
   const userRepository = {
     findByPhone: jest.fn(),
     create: jest.fn(),
-  } as unknown as PrismaUserRepository;
+  } as unknown as UserRepository;
 
   const smsNotificationPublisher = {
     publishUserRegistered: jest.fn(),

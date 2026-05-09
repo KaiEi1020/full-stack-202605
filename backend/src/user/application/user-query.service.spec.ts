@@ -1,4 +1,4 @@
-import { PrismaUserRepository } from '../infrastructure/prisma-user.repository';
+import { UserRepository } from '../domain/user.repository';
 import { UserQueryService } from './user-query.service';
 
 describe('UserQueryService', () => {
@@ -6,7 +6,7 @@ describe('UserQueryService', () => {
   const userRepository = {
     findAll: jest.fn().mockResolvedValue(users),
     findById: jest.fn().mockResolvedValue(users[0]),
-  } as unknown as PrismaUserRepository;
+  } as unknown as UserRepository;
 
   let service: UserQueryService;
 

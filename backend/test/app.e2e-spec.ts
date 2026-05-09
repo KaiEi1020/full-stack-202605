@@ -1,15 +1,19 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 import { BigModelService } from './../src/bigmodel/bigmodel.service';
+import { JobRequirementEntity, ResumeEntity, UserEntity } from './../src/database';
 import { PdfParserService } from './../src/pdf/pdf-parser.service';
-import { PrismaService } from './../src/prisma/prisma.service';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
-  let prisma: PrismaService;
+  let userRepository: Repository<UserEntity>;
+  let resumeRepository: Repository<ResumeEntity>;
+  let jobRequirementRepository: Repository<JobRequirementEntity>;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -47,48 +51,36 @@ describe('AppController (e2e)', () => {
     app.enableCors({ origin: true });
     await app.init();
 
-    prisma = app.get(PrismaService);
-    await prisma.screeningEvent.deleteMany();
-    await prisma.candidateScore.deleteMany();
-    await prisma.candidateExtraction.deleteMany();
-    await prisma.resumeParse.deleteMany();
-    await prisma.resumeFile.deleteMany();
-    await prisma.screeningJob.deleteMany();
-    await prisma.jobRequirement.deleteMany();
-    await prisma.candidate.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.user.createMany({
-      data: [
-        { id: '1', name: 'Ada Lovelace', email: 'ada@example.com', phone: '13800000001' },
-        { id: '2', name: 'Grace Hopper', email: 'grace@example.com', phone: '13800000002' },
-        { id: '3', name: 'Linus Torvalds', email: 'linus@example.com', phone: '13800000003' },
-      ],
-    });
+    userRepository = app.get(getRepositoryToken(UserEntity));
+    resumeRepository = app.get(getRepositoryToken(ResumeEntity));
+    jobRequirementRepository = app.get(getRepositoryToken(JobRequirementEntity));
+
+    await resumeRepository.clear();
+    await jobRequirementRepository.clear();
+    await userRepository.clear();
+    await userRepository.save([
+      { id: '1', name: 'Ada Lovelace', email: 'ada@example.com', phone: '13800000001' },
+      { id: '2', name: 'Grace Hopper', email: 'grace@example.com', phone: '13800000002' },
+      { id: '3', name: 'Linus Torvalds', email: 'linus@example.com', phone: '13800000003' },
+    ]);
   });
 
   it('/ (GET)', () => {
     return request(app.getHttpServer()).get('/').expect(200).expect('Hello World!');
   });
 
-  it('/graphql (POST) returns users through the service path', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/graphql')
-      .send({ query: '{ users { id name email phone } }' })
-      .expect(200);
-
-    expect(response.body.data.users).toHaveLength(3);
+  it('GET /api/users returns users through the service path', async () => {
+    const response = await request(app.getHttpServer()).get('/api/users').expect(200);
+    expect(response.body).toHaveLength(3);
   });
 
-  it('/graphql (POST) registers a user', async () => {
+  it('POST /api/users registers a user', async () => {
     const response = await request(app.getHttpServer())
-      .post('/graphql')
-      .send({
-        query: 'mutation ($input: RegisterUserInput!) { registerUser(input: $input) { id name email phone } }',
-        variables: { input: { name: 'New User', phone: '13800000009' } },
-      })
-      .expect(200);
+      .post('/api/users')
+      .send({ name: 'New User', phone: '13800000009' })
+      .expect(201);
 
-    expect(response.body.data.registerUser.phone).toBe('13800000009');
+    expect(response.body.phone).toBe('13800000009');
   });
 
   it('rejects non-pdf uploads', async () => {
@@ -100,17 +92,17 @@ describe('AppController (e2e)', () => {
     expect(response.body.message).toBe('仅支持 PDF 格式');
   });
 
-  it('creates a candidate record after pdf upload', async () => {
+  it('creates a resume record after pdf upload', async () => {
     await request(app.getHttpServer())
       .post('/api/resumes')
       .attach('file', Buffer.from('%PDF-1.4 mock'), { filename: 'resume.pdf', contentType: 'application/pdf' })
       .expect(201);
 
-    const candidates = await prisma.candidate.findMany();
-    expect(candidates.length).toBe(1);
+    const resumes = await resumeRepository.find();
+    expect(resumes.length).toBe(1);
   });
 
-  it('updates candidate status after screening completes', async () => {
+  it('updates resume status after screening completes', async () => {
     const response = await request(app.getHttpServer())
       .post('/api/resumes')
       .attach('file', Buffer.from('%PDF-1.4 mock'), { filename: 'resume.pdf', contentType: 'application/pdf' })
@@ -118,11 +110,8 @@ describe('AppController (e2e)', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    const candidate = await prisma.candidate.findUniqueOrThrow({
-      where: { id: response.body.candidateId },
-    });
-
-    expect(candidate.status).toBe('PASSED');
+    const resume = await resumeRepository.findOneByOrFail({ id: response.body.resumeId });
+    expect(resume.status).toBe('PASSED');
   });
 
   afterEach(async () => {

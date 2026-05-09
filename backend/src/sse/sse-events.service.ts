@@ -4,6 +4,7 @@ import { Subject } from 'rxjs';
 export type CandidateEvent = {
   id: string;
   candidateId: string;
+  resumeId?: string | null;
   jobId?: string | null;
   type: string;
   stage: string;

@@ -1,17 +1,22 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserQueryService } from './application/user-query.service';
 import { RegisterUserService } from './application/register-user.service';
-import { PrismaUserRepository } from './infrastructure/prisma-user.repository';
+import { UserEntity } from '../database';
+import { USER_REPOSITORY } from './domain/user.repository';
+import { TypeOrmUserRepository } from './infrastructure/typeorm-user.repository';
 import { SmsNotificationPublisher } from './infrastructure/sms-notification.publisher';
-import { UserResolver } from './user.resolver';
+import { UserController } from './user.controller';
 
 @Module({
+  imports: [TypeOrmModule.forFeature([UserEntity])],
+  controllers: [UserController],
   providers: [
-    UserResolver,
     UserQueryService,
     RegisterUserService,
-    PrismaUserRepository,
     SmsNotificationPublisher,
+    TypeOrmUserRepository,
+    { provide: USER_REPOSITORY, useExisting: TypeOrmUserRepository },
   ],
 })
 export class UserModule {}

@@ -1,5 +1,6 @@
-import { ConflictException, Injectable } from '@nestjs/common';
-import { PrismaUserRepository } from '../infrastructure/prisma-user.repository';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import type { UserRepository } from '../domain/user.repository';
+import { USER_REPOSITORY } from '../domain/user.repository';
 import { User } from '../models/user.model';
 import { SmsNotificationPublisher } from '../infrastructure/sms-notification.publisher';
 import { RegisterUserInput } from '../register-user.input';
@@ -7,7 +8,7 @@ import { RegisterUserInput } from '../register-user.input';
 @Injectable()
 export class RegisterUserService {
   constructor(
-    private readonly userRepository: PrismaUserRepository,
+    @Inject(USER_REPOSITORY) private readonly userRepository: UserRepository,
     private readonly smsNotificationPublisher: SmsNotificationPublisher,
   ) {}
 

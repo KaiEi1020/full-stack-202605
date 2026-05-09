@@ -1,5 +1,7 @@
 import { User } from '../models/user.model';
 
+export const USER_REPOSITORY = Symbol('USER_REPOSITORY');
+
 export interface CreateUserInput {
   name: string;
   email: string;
