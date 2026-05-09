@@ -1,6 +1,6 @@
 services:
   backend:
-    image: resume-backend:latest
+    image: backend:latest
     env_file:
       - .env
     environment:
@@ -18,7 +18,7 @@ services:
       - "3000"
 
   frontend:
-    image: resume-frontend:latest
+    image: frontend:latest
     depends_on:
       - backend
     ports:

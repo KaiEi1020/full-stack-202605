@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
-FRONTEND_IMAGE="resume-frontend:latest"
-BACKEND_IMAGE="resume-backend:latest"
+FRONTEND_IMAGE="frontend:latest"
+BACKEND_IMAGE="backend:latest"
 ARCHIVE_DIR="$ROOT_DIR/dist-deploy"
 REMOTE_USER=""
 REMOTE_HOST=""
@@ -24,8 +24,8 @@ Options:
   --user <user>                CVM SSH username
   --dir <dir>                  Target app directory on CVM
   --port <port>                CVM SSH port (default: 22)
-  --frontend-image <tag>       Frontend image tag (default: resume-frontend:latest)
-  --backend-image <tag>        Backend image tag (default: resume-backend:latest)
+  --frontend-image <tag>       Frontend image tag (default: frontend:latest)
+  --backend-image <tag>        Backend image tag (default: backend:latest)
   --archive-dir <dir>          Output directory for exported images (default: ./dist-deploy)
   --include-data               Transfer ./data if it exists
   --include-storage            Transfer ./storage if it exists
@@ -173,7 +173,7 @@ fi
 
 if [[ "$COMMAND" == "transfer" || "$COMMAND" == "all" ]]; then
   if [[ -z "$REMOTE_HOST" || -z "$REMOTE_USER" || -z "$REMOTE_DIR" ]]; then
-    printf '--host, --user, and --dir are required for transfer/all.\n' >&2
+    printf '%s\n' '--host, --user, and --dir are required for transfer/all.' >&2
     exit 1
   fi
 fi
