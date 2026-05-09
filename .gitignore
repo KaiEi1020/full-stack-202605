@@ -2,3 +2,5 @@
 .playwright-cli/
 node_modules
 .env
+*.tar
+*.tar.gz
