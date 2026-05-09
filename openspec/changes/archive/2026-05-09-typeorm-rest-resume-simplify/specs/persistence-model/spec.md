@@ -1,8 +1,4 @@
-## Purpose
-
-TBD
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: 后端必须通过 Prisma 管理持久化模型
 系统 MUST 使用 TypeORM 实体与数据源配置作为后端持久化结构的定义来源，并通过 TypeORM 仓储或 Repository 执行数据访问。
