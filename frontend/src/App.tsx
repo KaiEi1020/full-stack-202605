@@ -4,21 +4,23 @@ import { useEffect, useState } from 'react';
 import { CandidateDetailPage } from './pages/CandidateDetailPage';
 import { CandidateListPage } from './pages/CandidateListPage';
 import { GraphqlDemoPage } from './pages/GraphqlDemoPage';
+import { ResumeScorePage } from './pages/ResumeScorePage';
 import { ResumeUploadPage } from './pages/ResumeUploadPage';
 import { UserRegistrationPage } from './pages/UserRegistrationPage';
 
-type Pathname = '/' | '/upload' | '/candidates' | '/candidate' | '/graphql-demo' | '/register' | 'not-found';
+type Pathname = '/' | '/upload' | '/candidates' | '/candidate' | '/resume-score' | '/graphql-demo' | '/register' | 'not-found';
 
 type NavItem = {
-  href: '/' | '/upload' | '/candidates' | '/graphql-demo' | '/register';
+  href: '/' | '/upload' | '/candidates' | '/resume-score' | '/graphql-demo' | '/register';
   label: string;
 };
 
 const navItems: NavItem[] = [
   { href: '/', label: '首页' },
   { href: '/upload', label: '上传筛选' },
-  { href: '/candidates', label: '候选人管理' },
-  { href: '/graphql-demo', label: 'GraphQL 示例' },
+  { href: '/candidates', label: '简历管理' },
+  { href: '/resume-score', label: '评分图表' },
+  { href: '/graphql-demo', label: 'REST 示例' },
   { href: '/register', label: '注册页' },
 ];
 
@@ -27,12 +29,13 @@ function getPathname(pathname: string): Pathname {
   if (pathname === '/upload') return '/upload';
   if (pathname === '/candidates') return '/candidates';
   if (pathname === '/candidate') return '/candidate';
+  if (pathname === '/resume-score') return '/resume-score';
   if (pathname === '/graphql-demo') return '/graphql-demo';
   if (pathname === '/register') return '/register';
   return 'not-found';
 }
 
-export function navigate(pathname: '/' | '/upload' | '/candidates' | '/candidate' | '/graphql-demo' | '/register', search = '') {
+export function navigate(pathname: '/' | '/upload' | '/candidates' | '/candidate' | '/resume-score' | '/graphql-demo' | '/register', search = '') {
   window.history.pushState({}, '', `${pathname}${search}`);
   window.dispatchEvent(new PopStateEvent('popstate'));
 }
@@ -199,6 +202,7 @@ function App() {
         />
       ) : null}
       {pathname === '/candidate' && selectedCandidateId ? <CandidateDetailPage candidateId={selectedCandidateId} /> : null}
+      {pathname === '/resume-score' && selectedCandidateId ? <ResumeScorePage resumeId={selectedCandidateId} /> : null}
       {pathname === '/graphql-demo' ? <GraphqlDemoPage /> : null}
       {pathname === '/register' ? <UserRegistrationPage /> : null}
       {pathname === 'not-found' ? <NotFoundPage /> : null}

@@ -1,4 +1,5 @@
 export type UploadResponse = {
+  resumeId: string;
   candidateId: string;
   jobId: string;
 };
@@ -6,6 +7,7 @@ export type UploadResponse = {
 export type ScreeningEvent = {
   id: string;
   candidateId: string;
+  resumeId?: string | null;
   jobId?: string | null;
   type: string;
   stage: string;

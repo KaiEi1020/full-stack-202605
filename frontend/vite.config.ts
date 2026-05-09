@@ -7,9 +7,8 @@ export default defineConfig({
   plugins: [react(), babel({ presets: [reactCompilerPreset()] }), tailwindcss()],
   server: {
     proxy: {
-      '/api': 'http://127.0.0.1:3001',
-      '/graphql': 'http://127.0.0.1:3001',
-      '/storage': 'http://127.0.0.1:3001',
+      '/api': 'http://127.0.0.1:3000',
+      '/storage': 'http://127.0.0.1:3000',
     },
   },
 });

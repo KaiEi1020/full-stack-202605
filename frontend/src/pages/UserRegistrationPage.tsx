@@ -1,22 +1,12 @@
-import { useMutation } from '@apollo/client/react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { REGISTER_USER } from '../graphql/queries';
+import { apiPost } from '../lib/api';
 
 type RegisterUserData = {
-  registerUser: {
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
-  };
-};
-
-type RegisterUserVariables = {
-  input: {
-    name: string;
-    phone: string;
-  };
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
 };
 
 function inputClassName() {
@@ -26,25 +16,26 @@ function inputClassName() {
 export function UserRegistrationPage() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [registerUser, result] = useMutation<RegisterUserData, RegisterUserVariables>(REGISTER_USER);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<RegisterUserData | null>(null);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmedName = name.trim();
     const trimmedPhone = phone.trim();
-
     if (!trimmedName || !trimmedPhone) {
       return;
     }
-
-    await registerUser({
-      variables: {
-        input: {
-          name: trimmedName,
-          phone: trimmedPhone,
-        },
-      },
-    });
+    try {
+      setLoading(true);
+      setError(null);
+      setUser(await apiPost<RegisterUserData>('/api/users', { name: trimmedName, phone: trimmedPhone }));
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : '提交失败');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,16 +43,16 @@ export function UserRegistrationPage() {
       <section className="rounded-[2rem] border border-accent-100 bg-gradient-to-br from-white via-white to-violet-50 px-6 py-8 shadow-soft dark:border-white/10 dark:from-white/10 dark:via-slate-950/60 dark:to-violet-950/30">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent-500">User Registration</p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight text-ink-950 dark:text-white">用户注册</h1>
-        <p className="mt-3 text-base leading-7 text-ink-500 dark:text-slate-300">填写用户名和手机号，前端会调用 GraphQL mutation 完成注册，并由后端触发短信通知占位逻辑。</p>
+        <p className="mt-3 text-base leading-7 text-ink-500 dark:text-slate-300">填写用户名和手机号，前端会调用 REST 接口完成注册。</p>
       </section>
 
       <section className="rounded-4xl border border-line bg-white/80 p-6 shadow-soft backdrop-blur xl:p-8 dark:border-white/10 dark:bg-white/5">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight text-ink-950 dark:text-white">注册表单</h2>
-            <p className="mt-2 text-sm text-ink-500 dark:text-slate-300">调用 `registerUser` mutation 创建用户并展示返回结果。</p>
+            <p className="mt-2 text-sm text-ink-500 dark:text-slate-300">调用 `POST /api/users` 创建用户并展示返回结果。</p>
           </div>
-          <span className="rounded-full border border-line bg-white/70 px-3 py-1 font-mono text-xs text-ink-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">mutation registerUser</span>
+          <span className="rounded-full border border-line bg-white/70 px-3 py-1 font-mono text-xs text-ink-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">POST /api/users</span>
         </div>
 
         <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
@@ -76,21 +67,21 @@ export function UserRegistrationPage() {
           </label>
 
           <div>
-            <button type="submit" className="inline-flex items-center rounded-full bg-ink-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-500 disabled:cursor-not-allowed disabled:bg-slate-400" disabled={result.loading}>
-              {result.loading ? '提交中…' : '注册用户'}
+            <button type="submit" className="inline-flex items-center rounded-full bg-ink-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-500 disabled:cursor-not-allowed disabled:bg-slate-400" disabled={loading}>
+              {loading ? '提交中…' : '注册用户'}
             </button>
           </div>
         </form>
 
-        {result.error ? <p className="mt-6 rounded-3xl bg-danger-100 px-4 py-4 text-sm text-danger-700">{result.error.message}</p> : null}
+        {error ? <p className="mt-6 rounded-3xl bg-danger-100 px-4 py-4 text-sm text-danger-700">{error}</p> : null}
 
-        {result.data?.registerUser ? (
+        {user ? (
           <article className="mt-6 rounded-[1.75rem] border border-line bg-white/85 p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/40">
-            <h3 className="text-lg font-semibold text-ink-950 dark:text-white">{result.data.registerUser.name}</h3>
+            <h3 className="text-lg font-semibold text-ink-950 dark:text-white">{user.name}</h3>
             <div className="mt-4 grid gap-2 text-sm text-ink-600 dark:text-slate-300">
-              <p>ID: {result.data.registerUser.id}</p>
-              <p>Email: {result.data.registerUser.email}</p>
-              <p>Phone: {result.data.registerUser.phone}</p>
+              <p>ID: {user.id}</p>
+              <p>Email: {user.email}</p>
+              <p>Phone: {user.phone}</p>
             </div>
           </article>
         ) : null}

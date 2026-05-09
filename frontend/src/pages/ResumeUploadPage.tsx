@@ -30,7 +30,7 @@ export function ResumeUploadPage() {
           isUploading={isUploading}
           onSubmit={async (file, jdText, requiredSkills, preferredSkills) => {
             const result = await upload(file, jdText, requiredSkills, preferredSkills);
-            setCandidateId(result.candidateId);
+            setCandidateId(result.resumeId);
             setToastMessage(SUCCESS_MESSAGE);
           }}
         />
