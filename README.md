@@ -1,127 +1,206 @@
 # full-stack-202605
 
-一个面向大 DAU 与复杂业务场景的全栈模板。
-
-适合需要同时兼顾以下目标的团队：
-
-- 支撑高并发访问与持续演进的业务需求
-- 在复杂领域中保持模块边界清晰、可维护、可扩展
-- 在简单场景下避免过度设计，保持开发效率
-- 以前后端分离的方式快速启动中大型业务系统
+一个前后端分离的全栈项目模板，包含 React 19 + Vite 前端和 NestJS 11 后端，并提供基于 Docker 的远程部署脚本。
 
 ## 技术栈
 
 | 层 | 技术 |
 | --- | --- |
 | 前端 | React 19 + Vite |
-| 后端 | NestJS 11 |
+| 后端 | NestJS 11 + GraphQL |
+| 数据访问 | Prisma + SQLite |
 | 语言 | TypeScript |
 | 包管理 | pnpm |
+| 部署 | Docker + Docker Compose |
 
-## 设计目标
-
-这个模板不是只服务于 Demo 或小型后台，而是面向真实业务系统：
-
-- **可承载大 DAU**：适合作为高访问量产品的基础工程骨架
-- **可应对复杂业务**：适合包含多角色、多流程、多状态流转的业务域
-- **分层清晰**：便于多人协作、模块拆分和后续演进
-- **不过度复杂**：不是所有模块都强制上重模式，按业务复杂度选择实现方式
-
-## 后端架构策略
-
-后端基于 **NestJS**。
-
-针对不同复杂度的业务模块，采用两种实现策略：
-
-### 1. 复杂模块：使用 DDD
-
-当模块具备明显的领域复杂性时，优先采用 DDD（领域驱动设计），例如：
-
-- 业务规则多且变化频繁
-- 状态流转复杂
-- 聚合、实体、值对象边界明确
-- 需要长期维护并持续扩展
-
-DDD 的目标不是增加形式感，而是让复杂业务逻辑具备更清晰的领域表达和更稳固的演进能力。
-
-### 2. 简单模块：使用普通 service
-
-当模块逻辑直接、规则简单、生命周期短时，使用常规的 NestJS service / controller 模式即可，例如：
-
-- CRUD 为主的基础管理模块
-- 规则较少的配置类模块
-- 不值得引入复杂领域建模的场景
-
-这样可以避免把所有问题都 DDD 化，在可维护性与开发效率之间取得平衡。
-
-## 前端架构策略
-
-前端基于 **React**，适合构建中大型单页应用。
-
-推荐原则：
-
-- 简单页面保持直接、轻量的组件实现
-- 复杂业务页面按领域或模块拆分
-- 让前端模块边界尽量与后端业务边界对齐
-- 优先追求可读性、可维护性与可扩展性
-
-## 适用场景
-
-这个模板尤其适合：
-
-- 面向大量用户的互联网产品
-- 业务流程复杂的管理系统或平台型系统
-- 需要持续迭代、多人协作的中后台项目
-- 希望在“工程规范”和“开发效率”之间取得平衡的团队
-
-## 项目结构
+## 仓库结构
 
 ```text
 .
-├── frontend/   # React + Vite 前端应用
-├── backend/    # NestJS 后端应用
-└── pnpm-workspace.yaml
+├── frontend/       # React + Vite 前端应用
+├── backend/        # NestJS 后端应用
+├── scripts/        # 打包、传输、远端启动脚本
+├── dist-deploy/    # 部署产物输出目录
+├── docker-compose.yml
+└── deploy-cvm.sh
 ```
 
-## Workspace 用法
+## 项目说明
+
+该仓库包含两个独立管理的 Node/TypeScript 应用：
+
+- `frontend/`：单页前端应用
+- `backend/`：HTTP API 与 GraphQL 服务
+
+依赖需要分别在各自目录中安装，不使用根目录 pnpm workspace。
+
+## 环境要求
+
+| 工具 | 建议版本 |
+| --- | --- |
+| Node.js | 20+ |
+| pnpm | 10+ |
+| Docker | 最新稳定版 |
+| Docker Compose Plugin | 最新稳定版 |
+
+## 快速开始
+
+### 1. 安装依赖
+
+```bash
+cd frontend && pnpm install
+cd ../backend && pnpm install
+```
+
+### 2. 启动前端开发环境
+
+```bash
+cd frontend && pnpm dev
+```
+
+### 3. 启动后端开发环境
+
+```bash
+cd backend && pnpm start:dev
+```
+
+后端默认监听 `process.env.PORT ?? 3000`。
+
+## 常用命令
+
+### frontend/
 
 | 操作 | 命令 |
 | --- | --- |
-| 安装全部依赖 | `pnpm install` |
-| 启动前端开发服务 | `pnpm --filter frontend dev` |
-| 启动后端开发服务 | `pnpm --filter backend start:dev` |
-| 构建全部应用 | `pnpm -r build` |
-| 检查全部应用 | `pnpm -r lint` |
-| 运行后端测试 | `pnpm --filter backend test` |
+| 安装依赖 | `cd frontend && pnpm install` |
+| 启动开发服务 | `cd frontend && pnpm dev` |
+| 生产构建 | `cd frontend && pnpm build` |
+| 代码检查 | `cd frontend && pnpm lint` |
+| 预览构建结果 | `cd frontend && pnpm preview` |
 
-## 开发原则
+### backend/
 
-- 复杂模块重建模：用 DDD 解决复杂性
-- 简单模块重效率：用普通 service 快速交付
-- 前后端职责清晰：降低耦合，便于协作
-- 模板先服务真实业务，再服务展示效果
+| 操作 | 命令 |
+| --- | --- |
+| 安装依赖 | `cd backend && pnpm install` |
+| 启动开发服务 | `cd backend && pnpm start:dev` |
+| 启动一次 | `cd backend && pnpm start` |
+| 生产构建 | `cd backend && pnpm build` |
+| 代码检查 | `cd backend && pnpm lint` |
+| 格式化 | `cd backend && pnpm format` |
+| 单元测试 | `cd backend && pnpm test` |
+| 监听测试 | `cd backend && pnpm test:watch` |
+| 覆盖率测试 | `cd backend && pnpm test:cov` |
+| E2E 测试 | `cd backend && pnpm test:e2e` |
+| 调试测试 | `cd backend && pnpm test:debug` |
 
+## 根目录脚本
 
-## 部署
-docker save -o frontend.tar frontend:latest
-docker save -o backend.tar backend:latest
+虽然前后端独立安装依赖，但根目录保留了一些便捷脚本：
 
-gzip frontend.tar
-gzip backend.tar
-scp frontend.tar.gz backend.tar.gz root@1.13.20.235:~/resume-app/
+| 操作 | 命令 |
+| --- | --- |
+| 启动前端开发 | `pnpm dev:frontend` |
+| 启动后端开发 | `pnpm dev:backend` |
+| 构建全部 | `pnpm build` |
+| 检查全部 | `pnpm lint` |
+| 运行后端测试 | `pnpm test` |
+| 打包部署文件 | `pnpm deploy:cvm:pack` |
+| 传输到远端 | `pnpm deploy:cvm:transfer` |
+| 打包并传输 | `pnpm deploy:cvm` |
 
-服务器: 
-gunzip frontend.tar.gz
-gunzip backend.tar.gz
+## 后端运行配置
 
-docker load -i frontend.tar
-docker load -i backend.tar
+`docker-compose.yml` 中后端支持以下环境变量：
 
+| 变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `NODE_ENV` | `production` | 运行环境 |
+| `PORT` | `3000` | 后端监听端口 |
+| `DATABASE_URL` | `file:/app/data/dev.db` | SQLite 数据库地址 |
+| `STORAGE_DIR` | `/app/storage` | 文件存储目录 |
+| `GRAPHQL_SCHEMA_PATH` | `/app/schema.gql` | GraphQL schema 输出路径 |
+| `BIGMODEL_API_KEY` | 空 | 大模型接口密钥 |
+| `BIGMODEL_MODEL` | `glm-4.5-air` | 大模型名称 |
 
-gunzip -f resume-frontend.tar.gz
-gunzip -f resume-backend.tar.gz
+## Docker 本地运行
 
-docker load -i resume-frontend.tar
-docker load -i resume-backend.tar
+确保根目录存在可用的 `.env` 文件后执行：
 
-安装compose 插件
+```bash
+docker compose up -d
+```
+
+常用命令：
+
+| 操作 | 命令 |
+| --- | --- |
+| 启动服务 | `docker compose up -d` |
+| 停止服务 | `docker compose down` |
+| 重启容器 | `docker compose restart` |
+| 强制重建并启动 | `docker compose up -d --force-recreate` |
+| 查看状态 | `docker compose ps` |
+| 查看日志 | `docker compose logs -f backend frontend` |
+
+## 远程部署
+
+### 1. 打包镜像与部署文件
+
+```bash
+node scripts/pack-cvm.mjs
+```
+
+产物会输出到 `dist-deploy/`。
+
+### 2. 传输到远端服务器
+
+```bash
+node scripts/transfer-cvm.mjs --host <host> --user <user> [--key <key-path>]
+```
+
+也可以使用封装脚本：
+
+```bash
+bash ./deploy-cvm.sh transfer --host <host> --user <user> [--key <key-path>]
+```
+
+### 3. 一键打包并传输
+
+```bash
+bash ./deploy-cvm.sh all --host <host> --user <user> [--key <key-path>]
+```
+
+### 4. 远端启动
+
+```bash
+cd ~/resume-app && sudo ./start-remote.sh
+```
+
+## 远端服务器准备
+
+安装 Docker 与 Compose 插件：
+
+```bash
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+## 日志
+```bash
+cd ~/resume-app && sudo docker compose ps && sudo docker compose logs --tail=100 backend frontend
+```
+
+如果需要手动处理镜像：
+
+| 操作 | 命令 |
+| --- | --- |
+| 解压前端镜像 | `gunzip -f frontend.tar.gz` |
+| 解压后端镜像 | `gunzip -f backend.tar.gz` |
+| 加载前端镜像 | `docker load -i frontend.tar` |
+| 加载后端镜像 | `docker load -i backend.tar` |
+| 启动服务 | `docker compose up -d` |
+
+## 说明
+
+- 前端当前是单页应用，主要入口在 `frontend/src/App.tsx`
+- 后端当前基于标准 NestJS 启动方式，入口在 `backend/src/main.ts`
+- 后端 lint 命令带 `--fix`，执行时会直接修改文件
