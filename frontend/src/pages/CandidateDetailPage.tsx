@@ -82,12 +82,36 @@ export function CandidateDetailPage({ candidateId }: CandidateDetailPageProps) {
 
               <div className="rounded-[1.75rem] border border-line bg-white/85 p-5 dark:border-white/10 dark:bg-slate-950/40">
                 <h3 className="text-lg font-semibold text-ink-950 dark:text-white">状态流转</h3>
+                <div className="mt-4 rounded-3xl border border-line bg-slate-50/80 p-4 dark:border-white/10 dark:bg-slate-950/40">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-ink-400 dark:text-slate-400">当前状态</p>
+                  <div className="mt-3 flex items-center gap-3">
+                    <CandidateStatusBadge status={candidate.status} />
+                    <span className="text-sm text-ink-500 dark:text-slate-300">{getCandidateStatusMeta(candidate.status).description}</span>
+                  </div>
+                </div>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {statusOptions.map((status) => (
-                    <button key={status} type="button" className="rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-ink-700 transition hover:border-accent-300 hover:text-accent-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-200" onClick={async () => { await apiPatch(`/api/resumes/${candidateId}/status`, { status }); await load(); }}>
-                      {getCandidateStatusMeta(status).label}
-                    </button>
-                  ))}
+                  {statusOptions.map((status) => {
+                    const active = candidate.status === status;
+                    return (
+                      <button
+                        key={status}
+                        type="button"
+                        disabled={active}
+                        className={[
+                          'rounded-full border px-4 py-2 text-sm font-medium transition',
+                          active
+                            ? 'cursor-default border-accent-300 bg-accent-100 text-accent-500 shadow-sm dark:border-accent-400/40 dark:bg-accent-500/10 dark:text-accent-300'
+                            : 'border-line bg-white text-ink-700 hover:border-accent-300 hover:text-accent-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-200',
+                        ].join(' ')}
+                        onClick={async () => {
+                          await apiPatch(`/api/resumes/${candidateId}/status`, { status });
+                          await load();
+                        }}
+                      >
+                        {active ? `当前：${getCandidateStatusMeta(status).label}` : `切换为${getCandidateStatusMeta(status).label}`}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

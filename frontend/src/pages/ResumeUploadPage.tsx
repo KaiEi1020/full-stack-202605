@@ -28,9 +28,9 @@ export function ResumeUploadPage() {
       <main className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:py-12">
         <UploadForm
           isUploading={isUploading}
-          onSubmit={async (file, jdText, requiredSkills, preferredSkills) => {
-            const result = await upload(file, jdText, requiredSkills, preferredSkills);
-            setCandidateId(result.resumeId);
+          onSubmit={async (files, jdText, requiredSkills, preferredSkills) => {
+            const result = await upload(files, jdText, requiredSkills, preferredSkills);
+            setCandidateId(result[0]?.resumeId ?? null);
             setToastMessage(SUCCESS_MESSAGE);
           }}
         />

@@ -4,6 +4,8 @@ export type UploadResponse = {
   jobId: string;
 };
 
+export type UploadBatchResponse = UploadResponse[];
+
 export type ScreeningEvent = {
   id: string;
   candidateId: string;

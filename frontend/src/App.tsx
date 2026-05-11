@@ -5,28 +5,23 @@ import { CandidateDetailPage } from './pages/CandidateDetailPage';
 import { CandidateListPage } from './pages/CandidateListPage';
 import { GraphqlDemoPage } from './pages/GraphqlDemoPage';
 import { ResumeScorePage } from './pages/ResumeScorePage';
-import { ResumeUploadPage } from './pages/ResumeUploadPage';
 import { UserRegistrationPage } from './pages/UserRegistrationPage';
 
-type Pathname = '/' | '/upload' | '/candidates' | '/candidate' | '/resume-score' | '/graphql-demo' | '/register' | 'not-found';
+type Pathname = '/' | '/candidates' | '/candidate' | '/resume-score' | '/graphql-demo' | '/register' | 'not-found';
 
 type NavItem = {
-  href: '/' | '/upload' | '/candidates' | '/resume-score' | '/graphql-demo' | '/register';
+  href: '/' | '/candidates' | '/graphql-demo';
   label: string;
 };
 
 const navItems: NavItem[] = [
   { href: '/', label: '首页' },
-  { href: '/upload', label: '上传筛选' },
   { href: '/candidates', label: '简历管理' },
-  { href: '/resume-score', label: '评分图表' },
   { href: '/graphql-demo', label: 'REST 示例' },
-  { href: '/register', label: '注册页' },
 ];
 
 function getPathname(pathname: string): Pathname {
   if (pathname === '/') return '/';
-  if (pathname === '/upload') return '/upload';
   if (pathname === '/candidates') return '/candidates';
   if (pathname === '/candidate') return '/candidate';
   if (pathname === '/resume-score') return '/resume-score';
@@ -35,7 +30,7 @@ function getPathname(pathname: string): Pathname {
   return 'not-found';
 }
 
-export function navigate(pathname: '/' | '/upload' | '/candidates' | '/candidate' | '/resume-score' | '/graphql-demo' | '/register', search = '') {
+export function navigate(pathname: '/' | '/candidates' | '/candidate' | '/resume-score' | '/graphql-demo' | '/register', search = '') {
   window.history.pushState({}, '', `${pathname}${search}`);
   window.dispatchEvent(new PopStateEvent('popstate'));
 }
@@ -71,11 +66,11 @@ function HomePage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <button type="button" className="inline-flex items-center rounded-full bg-ink-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-500" onClick={() => navigate('/upload')}>
+              <button type="button" className="inline-flex items-center rounded-full bg-ink-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-500" onClick={() => navigate('/candidates')}>
                 开始上传
               </button>
               <button type="button" className="inline-flex items-center rounded-full border border-line bg-white/70 px-5 py-3 text-sm font-semibold text-ink-800 transition hover:border-accent-300 hover:text-accent-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-100" onClick={() => navigate('/candidates')}>
-                查看候选人
+                查看简历
               </button>
             </div>
           </div>
@@ -135,14 +130,14 @@ function App() {
 
   return (
     <div className="min-h-screen">
-      <Disclosure as="header" className="sticky top-0 z-30 border-b border-white/60 bg-white/70 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/65">
+      <Disclosure as="header" className="sticky top-0 z-30 border-b border-line/80 bg-white/88 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/92 dark:shadow-[0_1px_0_rgba(255,255,255,0.03)]">
         {({ open }) => (
           <>
             <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
               <div className="min-w-0">
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent-500">Recruitment Workspace</p>
                 <h1 className="mt-2 text-xl font-semibold tracking-tight text-ink-950 dark:text-white">AI 简历筛选平台</h1>
-                <p className="mt-1 hidden text-sm text-ink-500 md:block dark:text-slate-300">上传、筛选、管理候选人的统一前端工作台。</p>
+                <p className="mt-1 hidden text-sm text-ink-500 md:block dark:text-slate-300">上传、筛选、管理简历的统一前端工作台。</p>
               </div>
 
               <div className="hidden items-center gap-3 lg:flex">
@@ -192,7 +187,6 @@ function App() {
       </Disclosure>
 
       {pathname === '/' ? <HomePage /> : null}
-      {pathname === '/upload' ? <ResumeUploadPage /> : null}
       {pathname === '/candidates' ? (
         <CandidateListPage
           onOpenDetail={(candidateId) => {
