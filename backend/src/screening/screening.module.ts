@@ -7,7 +7,12 @@ import { SseModule } from '../sse/sse.module';
 import { ScreeningOrchestratorService } from './screening-orchestrator.service';
 
 @Module({
-  imports: [PdfModule, BigModelModule, SseModule, TypeOrmModule.forFeature([ResumeEntity])],
+  imports: [
+    PdfModule,
+    BigModelModule,
+    SseModule,
+    TypeOrmModule.forFeature([ResumeEntity]),
+  ],
   providers: [ScreeningOrchestratorService],
   exports: [ScreeningOrchestratorService],
 })

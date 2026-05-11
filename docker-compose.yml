@@ -6,9 +6,8 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: ${PORT:-3000}
-      DATABASE_URL: ${DATABASE_URL:-file:/app/data/dev.db}
+      SQLITE_DATABASE_PATH: ${SQLITE_DATABASE_PATH:-/app/data/data.sqlite}
       STORAGE_DIR: ${STORAGE_DIR:-/app/storage}
-      GRAPHQL_SCHEMA_PATH: ${GRAPHQL_SCHEMA_PATH:-/app/schema.gql}
       BIGMODEL_API_KEY: ${BIGMODEL_API_KEY:-}
       BIGMODEL_MODEL: ${BIGMODEL_MODEL:-glm-4.5-air}
     volumes:

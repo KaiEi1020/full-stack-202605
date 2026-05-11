@@ -117,9 +117,8 @@ cd backend && pnpm start:dev
 | --- | --- | --- |
 | `NODE_ENV` | `production` | 运行环境 |
 | `PORT` | `3000` | 后端监听端口 |
-| `DATABASE_URL` | `file:/app/data/dev.db` | SQLite 数据库地址 |
+| `SQLITE_DATABASE_PATH` | `/app/data/data.sqlite` | SQLite 数据库文件路径 |
 | `STORAGE_DIR` | `/app/storage` | 文件存储目录 |
-| `GRAPHQL_SCHEMA_PATH` | `/app/schema.gql` | GraphQL schema 输出路径 |
 | `BIGMODEL_API_KEY` | 空 | 大模型接口密钥 |
 | `BIGMODEL_MODEL` | `glm-4.5-air` | 大模型名称 |
 

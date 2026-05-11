@@ -6,7 +6,10 @@ import { CandidateController } from './candidate.controller';
 import { CandidateService } from './candidate.service';
 
 @Module({
-  imports: [BigModelModule, TypeOrmModule.forFeature([ResumeEntity, JobRequirementEntity])],
+  imports: [
+    BigModelModule,
+    TypeOrmModule.forFeature([ResumeEntity, JobRequirementEntity]),
+  ],
   controllers: [CandidateController],
   providers: [CandidateService],
   exports: [CandidateService],

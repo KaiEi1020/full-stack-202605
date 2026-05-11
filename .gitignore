@@ -4,3 +4,4 @@ node_modules
 .env
 *.tar
 *.tar.gz
+dist-deploy/

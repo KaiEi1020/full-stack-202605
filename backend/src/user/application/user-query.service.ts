@@ -5,7 +5,9 @@ import { User } from '../models/user.model';
 
 @Injectable()
 export class UserQueryService {
-  constructor(@Inject(USER_REPOSITORY) private readonly userRepository: UserRepository) {}
+  constructor(
+    @Inject(USER_REPOSITORY) private readonly userRepository: UserRepository,
+  ) {}
 
   findAll(): Promise<User[]> {
     return this.userRepository.findAll();

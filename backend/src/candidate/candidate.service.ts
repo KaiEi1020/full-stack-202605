@@ -20,7 +20,9 @@ export class CandidateService {
   ) {}
 
   async listCandidates() {
-    const items = await this.resumeRepository.find({ order: { createdAt: 'desc' } });
+    const items = await this.resumeRepository.find({
+      order: { createdAt: 'desc' },
+    });
     return items.map((item) => this.toCandidateView(item));
   }
 
@@ -33,7 +35,9 @@ export class CandidateService {
   }
 
   async updateStatus(input: UpdateCandidateStatusInput) {
-    const item = await this.resumeRepository.findOne({ where: { id: input.candidateId } });
+    const item = await this.resumeRepository.findOne({
+      where: { id: input.candidateId },
+    });
     if (!item) {
       throw new NotFoundException('简历不存在');
     }
@@ -43,7 +47,9 @@ export class CandidateService {
   }
 
   async saveCorrection(input: SaveCandidateCorrectionInput) {
-    const item = await this.resumeRepository.findOne({ where: { id: input.candidateId } });
+    const item = await this.resumeRepository.findOne({
+      where: { id: input.candidateId },
+    });
     if (!item) {
       throw new NotFoundException('简历不存在');
     }
@@ -66,12 +72,16 @@ export class CandidateService {
   }
 
   async listJobRequirements() {
-    const items = await this.jobRequirementRepository.find({ order: { updatedAt: 'desc' } });
+    const items = await this.jobRequirementRepository.find({
+      order: { updatedAt: 'desc' },
+    });
     return items.map((item) => this.toJobRequirementView(item));
   }
 
   async scoreCandidate(input: ScoreCandidateInput) {
-    const resume = await this.resumeRepository.findOne({ where: { id: input.candidateId } });
+    const resume = await this.resumeRepository.findOne({
+      where: { id: input.candidateId },
+    });
     if (!resume || !resume.cleanedText) {
       throw new NotFoundException('简历或解析结果不存在');
     }
@@ -131,9 +141,15 @@ export class CandidateService {
       resumeSummary: item.resumeSummary,
       resumeFilePath: item.storagePath,
       cleanedText: item.cleanedText,
+      parseStatus: item.parseStatus,
+      parseErrorMessage: item.parseErrorMessage,
+      screeningStatus: item.screeningStatus,
+      screeningStage: item.screeningStage,
+      screeningErrorMessage: item.screeningErrorMessage,
       skills: this.parseJsonArray(item.skillsJson),
       scores: this.parseJsonArray(item.scoreHistoryJson),
       createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
     };
   }
 
@@ -147,13 +163,13 @@ export class CandidateService {
     };
   }
 
-  private parseJsonArray(value: string | null) {
+  private parseJsonArray<T>(value: string | null): T[] {
     if (!value) {
       return [];
     }
     try {
-      const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : [];
+      const parsed: unknown = JSON.parse(value);
+      return Array.isArray(parsed) ? (parsed as T[]) : [];
     } catch {
       return [];
     }

@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CandidateStatus, JobStatus, ParseStatus, ResumeEntity } from '../database';
+import {
+  CandidateStatus,
+  JobStatus,
+  ParseStatus,
+  ResumeEntity,
+} from '../database';
 import { BigModelService } from '../bigmodel/bigmodel.service';
 import { PdfParserService } from '../pdf/pdf-parser.service';
 import { SseEventsService } from '../sse/sse-events.service';
@@ -18,12 +23,16 @@ export class ScreeningOrchestratorService {
   ) {}
 
   async run(resumeId: string, jobId: string, fileBuffer: Buffer) {
-    const resume = await this.resumeRepository.findOneByOrFail({ id: resumeId });
+    const resume = await this.resumeRepository.findOneByOrFail({
+      id: resumeId,
+    });
     resume.screeningStatus = JobStatus.RUNNING;
     resume.screeningStage = 'parsing';
     resume.screeningStartedAt = new Date();
     await this.resumeRepository.save(resume);
-    await this.recordEvent(resumeId, jobId, 'started', 'parsing', { message: '开始解析简历' });
+    await this.recordEvent(resumeId, jobId, 'started', 'parsing', {
+      message: '开始解析简历',
+    });
 
     try {
       const parsed = await this.pdfParserService.parse(fileBuffer);
@@ -34,13 +43,19 @@ export class ScreeningOrchestratorService {
       resume.parsedAt = new Date();
       resume.parseErrorMessage = null;
       await this.resumeRepository.save(resume);
-      await this.recordEvent(resumeId, jobId, 'section', 'parsing', { pageCount: parsed.pageCount });
+      await this.recordEvent(resumeId, jobId, 'section', 'parsing', {
+        pageCount: parsed.pageCount,
+      });
 
       resume.screeningStage = 'extracting';
       await this.resumeRepository.save(resume);
-      await this.recordEvent(resumeId, jobId, 'started', 'extracting', { message: '开始提取结构化信息' });
+      await this.recordEvent(resumeId, jobId, 'started', 'extracting', {
+        message: '开始提取结构化信息',
+      });
 
-      const extracted = await this.bigModelService.extractCandidateProfile(parsed.cleanedText);
+      const extracted = await this.bigModelService.extractCandidateProfile(
+        parsed.cleanedText,
+      );
       resume.name = extracted.basicInfo.name;
       resume.phone = extracted.basicInfo.phone;
       resume.email = extracted.basicInfo.email;
@@ -54,15 +69,29 @@ export class ScreeningOrchestratorService {
       resume.rawModelOutput = extracted.raw;
       resume.extractedAt = new Date();
       await this.resumeRepository.save(resume);
-      await this.recordEvent(resumeId, jobId, 'section', 'extracting', { basicInfo: extracted.basicInfo, skills: extracted.skills });
+      await this.recordEvent(resumeId, jobId, 'section', 'extracting', {
+        basicInfo: extracted.basicInfo,
+        skills: extracted.skills,
+      });
 
       resume.screeningStage = 'scoring';
       await this.resumeRepository.save(resume);
-      await this.recordEvent(resumeId, jobId, 'started', 'scoring', { message: '开始岗位评分' });
+      await this.recordEvent(resumeId, jobId, 'started', 'scoring', {
+        message: '开始岗位评分',
+      });
 
-      const requiredSkills = this.parseJsonArray(resume.requiredSkillsJson);
-      const preferredSkills = this.parseJsonArray(resume.preferredSkillsJson);
-      const score = await this.bigModelService.scoreCandidateAgainstJd(parsed.cleanedText, resume.jdText ?? '通用岗位需求', requiredSkills, preferredSkills);
+      const requiredSkills = this.parseJsonArray<string>(
+        resume.requiredSkillsJson,
+      );
+      const preferredSkills = this.parseJsonArray<string>(
+        resume.preferredSkillsJson,
+      );
+      const score = await this.bigModelService.scoreCandidateAgainstJd(
+        parsed.cleanedText,
+        resume.jdText ?? '通用岗位需求',
+        requiredSkills,
+        preferredSkills,
+      );
       const history = this.parseJsonArray(resume.scoreHistoryJson);
       history.unshift({
         id: randomUUID(),
@@ -80,17 +109,24 @@ export class ScreeningOrchestratorService {
       resume.aiComment = score.aiComment;
       resume.scoreHistoryJson = JSON.stringify(history);
       await this.resumeRepository.save(resume);
-      await this.recordEvent(resumeId, jobId, 'completed', 'scoring', { overallScore: score.overallScore, aiComment: score.aiComment });
+      await this.recordEvent(resumeId, jobId, 'completed', 'scoring', {
+        overallScore: score.overallScore,
+        aiComment: score.aiComment,
+      });
 
       resume.status = CandidateStatus.PASSED;
       resume.screeningStatus = JobStatus.SUCCEEDED;
       resume.screeningStage = 'completed';
       resume.screeningFinishedAt = new Date();
       await this.resumeRepository.save(resume);
-      await this.recordEvent(resumeId, jobId, 'completed', 'completed', { status: 'SUCCEEDED' });
+      await this.recordEvent(resumeId, jobId, 'completed', 'completed', {
+        status: 'SUCCEEDED',
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : '未知错误';
       resume.status = CandidateStatus.REJECTED;
+      resume.parseStatus = ParseStatus.FAILED;
+      resume.parseErrorMessage = message;
       resume.screeningStatus = JobStatus.FAILED;
       resume.screeningStage = 'failed';
       resume.screeningErrorMessage = message;
@@ -100,8 +136,16 @@ export class ScreeningOrchestratorService {
     }
   }
 
-  private async recordEvent(resumeId: string, jobId: string, type: string, stage: string, payload: Record<string, unknown>) {
-    const resume = await this.resumeRepository.findOneByOrFail({ id: resumeId });
+  private async recordEvent(
+    resumeId: string,
+    jobId: string,
+    type: string,
+    stage: string,
+    payload: Record<string, unknown>,
+  ) {
+    const resume = await this.resumeRepository.findOneByOrFail({
+      id: resumeId,
+    });
     const history = this.parseJsonArray(resume.eventHistoryJson);
     const event = {
       id: randomUUID(),
@@ -119,13 +163,13 @@ export class ScreeningOrchestratorService {
     this.sseEventsService.emit(resumeId, event);
   }
 
-  private parseJsonArray(value: string | null) {
+  private parseJsonArray<T>(value: string | null): T[] {
     if (!value) {
       return [];
     }
     try {
-      const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : [];
+      const parsed: unknown = JSON.parse(value);
+      return Array.isArray(parsed) ? (parsed as T[]) : [];
     } catch {
       return [];
     }

@@ -27,7 +27,7 @@ export class RegisterUserService {
       email: `${phone}@example.com`,
     });
 
-    await this.smsNotificationPublisher.publishUserRegistered({
+    this.smsNotificationPublisher.publishUserRegistered({
       userId: user.id,
       name: user.name,
       phone: user.phone,

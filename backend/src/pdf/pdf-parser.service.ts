@@ -7,7 +7,11 @@ export class PdfParserService {
     const parser = new PDFParse({ data: buffer });
     const parsed = await parser.getText();
     const rawText = parsed.text ?? '';
-    const cleanedText = rawText.replace(/\r/g, '').replace(/\n{3,}/g, '\n\n').replace(/[ \t]{2,}/g, ' ').trim();
+    const cleanedText = rawText
+      .replace(/\r/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/[ \t]{2,}/g, ' ')
+      .trim();
     return {
       pageCount: parsed.total ?? 0,
       rawText,

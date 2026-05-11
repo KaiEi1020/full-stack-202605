@@ -1,6 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { CandidateService } from './candidate.service';
-import { SaveCandidateCorrectionInput } from './dto/save-candidate-correction.input';
 import { ScoreCandidateInput } from './dto/score-candidate.input';
 import { UpdateCandidateStatusInput } from './dto/update-candidate-status.input';
 import { UpsertJobRequirementInput } from './dto/upsert-job-requirement.input';
@@ -20,13 +19,25 @@ export class CandidateController {
   }
 
   @Patch('resumes/:id/status')
-  updateResumeStatus(@Param('id') id: string, @Body() body: { status: UpdateCandidateStatusInput['status'] }) {
-    return this.candidateService.updateStatus({ candidateId: id, status: body.status });
+  updateResumeStatus(
+    @Param('id') id: string,
+    @Body() body: { status: UpdateCandidateStatusInput['status'] },
+  ) {
+    return this.candidateService.updateStatus({
+      candidateId: id,
+      status: body.status,
+    });
   }
 
   @Patch('resumes/:id/correction')
-  saveResumeCorrection(@Param('id') id: string, @Body() body: { correctedJson: string }) {
-    return this.candidateService.saveCorrection({ candidateId: id, correctedJson: body.correctedJson });
+  saveResumeCorrection(
+    @Param('id') id: string,
+    @Body() body: { correctedJson: string },
+  ) {
+    return this.candidateService.saveCorrection({
+      candidateId: id,
+      correctedJson: body.correctedJson,
+    });
   }
 
   @Post('resumes/:id/score')

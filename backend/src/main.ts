@@ -9,7 +9,8 @@ loadEnv({ path: join(process.cwd(), '.env') });
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const port = Number(process.env.PORT ?? 3000);
-  const storageDir = process.env.STORAGE_DIR ?? resolve(process.cwd(), '..', 'storage');
+  const storageDir =
+    process.env.STORAGE_DIR ?? resolve(process.cwd(), '..', 'storage');
 
   app.enableCors({ origin: true });
   app.use('/storage', express.static(storageDir));

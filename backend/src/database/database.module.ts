@@ -6,7 +6,9 @@ import { UserEntity } from './user.entity';
 
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity, ResumeEntity, JobRequirementEntity])],
+  imports: [
+    TypeOrmModule.forFeature([UserEntity, ResumeEntity, JobRequirementEntity]),
+  ],
   exports: [TypeOrmModule],
 })
 export class DatabaseModule {}

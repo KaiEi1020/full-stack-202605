@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CandidateStatus, JobStatus, ParseStatus, ResumeEntity } from '../database';
+import {
+  CandidateStatus,
+  JobStatus,
+  ParseStatus,
+  ResumeEntity,
+} from '../database';
 import { ScreeningOrchestratorService } from '../screening/screening-orchestrator.service';
 import { FsStorageService } from '../storage/fs-storage.service';
 import { UploadedPdfFile } from './uploaded-pdf-file.type';
@@ -16,10 +21,18 @@ export class ResumeUploadService {
     private readonly screeningOrchestratorService: ScreeningOrchestratorService,
   ) {}
 
-  async upload(file: UploadedPdfFile, jdText?: string, requiredSkills: string[] = [], preferredSkills: string[] = []) {
+  async upload(
+    file: UploadedPdfFile,
+    jdText?: string,
+    requiredSkills: string[] = [],
+    preferredSkills: string[] = [],
+  ) {
     const resumeId = randomUUID();
     const jobId = randomUUID();
-    const stored = await this.fsStorageService.savePdf(file.originalname, file.buffer);
+    const stored = await this.fsStorageService.savePdf(
+      file.originalname,
+      file.buffer,
+    );
 
     await this.resumeRepository.save(
       this.resumeRepository.create({

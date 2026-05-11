@@ -1,4 +1,10 @@
-import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { CandidateStatus } from './candidate-status.enum';
 import { JobStatus } from './job-status.enum';
 import { ParseStatus } from './parse-status.enum';

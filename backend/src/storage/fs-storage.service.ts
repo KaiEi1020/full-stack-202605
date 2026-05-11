@@ -5,7 +5,8 @@ import { randomUUID } from 'node:crypto';
 
 @Injectable()
 export class FsStorageService {
-  private readonly storageRoot = process.env.STORAGE_DIR ?? resolve(process.cwd(), '..', 'storage');
+  private readonly storageRoot =
+    process.env.STORAGE_DIR ?? resolve(process.cwd(), '..', 'storage');
   private readonly storageDir = join(this.storageRoot, 'resumes');
 
   async savePdf(

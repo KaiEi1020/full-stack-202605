@@ -10,8 +10,10 @@ export type UserRegisteredMessage = {
 export class SmsNotificationPublisher {
   private readonly logger = new Logger(SmsNotificationPublisher.name);
 
-  async publishUserRegistered(message: UserRegisteredMessage): Promise<void> {
-    this.logger.log(`RabbitMQ publish user.registered ${JSON.stringify(message)}`);
+  publishUserRegistered(message: UserRegisteredMessage): void {
+    this.logger.log(
+      `RabbitMQ publish user.registered ${JSON.stringify(message)}`,
+    );
     this.sendSms(message);
   }
 

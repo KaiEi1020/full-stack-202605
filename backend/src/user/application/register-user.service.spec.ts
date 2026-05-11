@@ -31,24 +31,32 @@ describe('RegisterUserService', () => {
     jest.spyOn(userRepository, 'findByPhone').mockResolvedValue(null);
     jest.spyOn(userRepository, 'create').mockResolvedValue(createdUser);
 
-    await expect(service.execute({ name: ' Ada ', phone: '13800000000' })).resolves.toEqual(createdUser);
+    await expect(
+      service.execute({ name: ' Ada ', phone: '13800000000' }),
+    ).resolves.toEqual(createdUser);
     expect(userRepository.create).toHaveBeenCalledWith({
       name: 'Ada',
       phone: '13800000000',
       email: '13800000000@example.com',
     });
-    expect(smsNotificationPublisher.publishUserRegistered).toHaveBeenCalledWith({
-      userId: '1',
-      name: 'Ada',
-      phone: '13800000000',
-    });
+    expect(smsNotificationPublisher.publishUserRegistered).toHaveBeenCalledWith(
+      {
+        userId: '1',
+        name: 'Ada',
+        phone: '13800000000',
+      },
+    );
   });
 
   it('rejects duplicate phone registration', async () => {
     jest.spyOn(userRepository, 'findByPhone').mockResolvedValue(createdUser);
 
-    await expect(service.execute({ name: 'Ada', phone: '13800000000' })).rejects.toBeInstanceOf(ConflictException);
+    await expect(
+      service.execute({ name: 'Ada', phone: '13800000000' }),
+    ).rejects.toBeInstanceOf(ConflictException);
     expect(userRepository.create).not.toHaveBeenCalled();
-    expect(smsNotificationPublisher.publishUserRegistered).not.toHaveBeenCalled();
+    expect(
+      smsNotificationPublisher.publishUserRegistered,
+    ).not.toHaveBeenCalled();
   });
 });
