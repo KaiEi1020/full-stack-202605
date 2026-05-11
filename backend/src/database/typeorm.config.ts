@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { JobRequirementEntity } from './job-requirement.entity';
@@ -14,7 +14,7 @@ export function createTypeOrmOptions(): TypeOrmModuleOptions {
     location: databasePath,
     autoSave: true,
     autoSaveCallback: (data) => {
-      require('node:fs').writeFileSync(databasePath, Buffer.from(data));
+      writeFileSync(databasePath, Buffer.from(data));
     },
     database: loadDatabase(databasePath),
     entities: [UserEntity, ResumeEntity, JobRequirementEntity],
