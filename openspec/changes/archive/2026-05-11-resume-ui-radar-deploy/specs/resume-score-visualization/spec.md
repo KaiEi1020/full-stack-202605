@@ -1,8 +1,4 @@
-## Purpose
-
-TBD
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: 系统必须支持评分结果的可视化展示
 系统 MUST 支持将简历 AI 评分结果以图表形式展示，并在简历详情页中同时提供条形图与雷达图等可辨识的多维度图形表达。

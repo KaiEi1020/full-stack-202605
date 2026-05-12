@@ -1,8 +1,4 @@
-## Purpose
-
-TBD
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: 系统必须提供 RESTful 简历接口
 系统 MUST 通过标准 HTTP RESTful 接口提供简历资源的创建、查询、更新与删除能力，而不是通过 GraphQL 查询或变更暴露该能力。
