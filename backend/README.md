@@ -1,98 +1,124 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+这个目录是当前项目的后端服务。
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 目录结构
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ pnpm install
+```text
+backend/
+├── src/
+│   ├── core/
+│   │   ├── bigmodel/
+│   │   ├── database/
+│   │   ├── pdf/
+│   │   ├── sse/
+│   │   └── storage/
+│   ├── modules/
+│   │   ├── candidate/
+│   │   ├── resume-upload/
+│   │   ├── screening/
+│   │   └── user/
+│   ├── app.controller.ts
+│   ├── app.module.ts
+│   ├── app.service.ts
+│   └── main.ts
+│
+├── test/
+├── data.sqlite
+├── schema.gql
+└── package.json
 ```
 
-## Compile and run the project
+## 模块说明
 
-```bash
-# development
-$ pnpm run start
+| 模块 | 作用 |
+| --- | --- |
+| `core/database` | 数据库配置、TypeORM 装配、数据库基础设施 |
+| `core/storage` | 文件存储能力 |
+| `core/pdf` | PDF 解析能力 |
+| `core/sse` | SSE 事件推送 |
+| `core/bigmodel` | 大模型相关能力 |
+| `modules/user` | 用户管理与注册 |
+| `modules/candidate` | 候选人、简历列表、职位要求、评分相关能力 |
+| `modules/resume-upload` | 简历上传入口 |
+| `modules/screening` | 简历解析、提取、评分编排流程 |
 
-# watch mode
-$ pnpm run start:dev
+## 结构约定
 
-# production mode
-$ pnpm run start:prod
-```
+### 顶层约定
 
-## Run tests
+| 目录 | 约定 |
+| --- | --- |
+| `src/core` | 放系统级基础设施能力，不放业务模块代码 |
+| `src/modules` | 放业务模块，按 feature 组织 |
+| `src/shared` | 仅在明确跨模块稳定复用时才创建和使用 |
 
-```bash
-# unit tests
-$ pnpm run test
+### 模块内部约定
 
-# e2e tests
-$ pnpm run test:e2e
+支持两种风格并存：
 
-# test coverage
-$ pnpm run test:cov
-```
+| 场景 | 推荐结构 |
+| --- | --- |
+| 简单 CRUD 模块 | `controller + service + dto + entities` |
+| 复杂业务模块 | `application + domain + infrastructure` |
 
-## Deployment
+### Entity 放置约定
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+| 类型 | 推荐位置 |
+| --- | --- |
+| 数据库基础设施 | `src/core/database` |
+| 简单 CRUD 模块的实体 | `src/modules/<feature>/entities` |
+| 复杂模块的 ORM Entity | `src/modules/<feature>/infrastructure/persistence/entities` |
+| 领域对象 / 仓储接口 | `src/modules/<feature>/domain` |
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+规则只有一条：**Entity 默认跟着 owning feature 走，不跟着 `database` 目录走。**
 
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
-```
+## 常用命令
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+| 目的 | 命令 |
+| --- | --- |
+| 安装依赖 | `pnpm install` |
+| 启动 | `pnpm start` |
+| 开发模式 | `pnpm start:dev` |
+| 构建 | `pnpm build` |
+| Lint | `pnpm lint` |
+| 格式化 | `pnpm format` |
+| 单测 | `pnpm test` |
+| e2e | `pnpm test:e2e` |
+| 覆盖率 | `pnpm test:cov` |
+| 重置本地数据库 | `pnpm db:reset` |
 
-## Resources
+## 开发流程
 
-Check out a few resources that may come in handy when working with NestJS:
+| 步骤 | 说明 |
+| --- | --- |
+| 1 | 进入 `backend/` 目录执行命令 |
+| 2 | 改动模块代码时，优先保持 feature 边界清晰 |
+| 3 | 改动实体、模块装配或依赖注入后，至少运行 `pnpm build` 和 `pnpm test` |
+| 4 | 涉及启动流程、数据库装配、上传解析链路时，再运行 `pnpm start` 做启动验证 |
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## 当前后端关注点
 
-## Support
+| 主题 | 说明 |
+| --- | --- |
+| 数据存储 | 当前使用 `sql.js`，数据库文件默认是 `data.sqlite` |
+| 实体注册 | 由 `src/core/database/typeorm.config.ts` 统一注册 |
+| API 入口 | 模块通过 `src/app.module.ts` 装配 |
+| 代码组织 | 优先按 feature 组织，而不是堆公共工具目录 |
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 什么时候不要抽公共目录
 
-## Stay in touch
+| 情况 | 建议 |
+| --- | --- |
+| 只被一个模块使用 | 留在该 feature 内部 |
+| 复用还不稳定 | 先允许重复，不急着抽 `shared` |
+| 依赖配置、数据库、外部服务 | 做成明确的 service/module，不要塞工具函数目录 |
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 变更前检查
 
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+| 检查项 | 要点 |
+| --- | --- |
+| 是否属于业务模块 | 放 `modules/` |
+| 是否属于系统基础设施 | 放 `core/` |
+| 是否真的跨模块稳定复用 | 才考虑 `shared/` |
+| 是否引入实体 | 先确定 owning feature，再落目录 |

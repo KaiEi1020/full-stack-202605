@@ -5,9 +5,9 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CandidateStatus } from '../../../core/database/candidate-status.enum';
-import { JobStatus } from '../../../core/database/job-status.enum';
-import { ParseStatus } from '../../../core/database/parse-status.enum';
+import { CandidateStatus } from './candidate-status.enum';
+import { JobStatus } from './job-status.enum';
+import { ParseStatus } from './parse-status.enum';
 
 @Entity('resumes')
 export class ResumeEntity {

@@ -1,4 +1,4 @@
-import { CandidateStatus } from '../../../core/database/candidate-status.enum';
+import { CandidateStatus } from '../entities';
 
 export class UpdateCandidateStatusInput {
   candidateId!: string;
