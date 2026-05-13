@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JobRequirementEntity, ResumeEntity } from '../database';
-import { BigModelModule } from '../bigmodel/bigmodel.module';
+import { JobRequirementEntity, ResumeEntity } from './entities';
+import { BigModelModule } from '../../core/bigmodel/bigmodel.module';
 import { CandidateController } from './candidate.controller';
 import { CandidateService } from './candidate.service';
 

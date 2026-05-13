@@ -3,7 +3,7 @@ import {
   JobStatus,
   ParseStatus,
   ResumeEntity,
-} from '../database';
+} from '../candidate/entities';
 import { CandidateService } from './candidate.service';
 
 describe('CandidateService', () => {

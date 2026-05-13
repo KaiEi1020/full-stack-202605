@@ -7,10 +7,10 @@ import {
   JobStatus,
   ParseStatus,
   ResumeEntity,
-} from '../database';
-import { BigModelService } from '../bigmodel/bigmodel.service';
-import { PdfParserService } from '../pdf/pdf-parser.service';
-import { SseEventsService } from '../sse/sse-events.service';
+} from '../candidate/entities';
+import { BigModelService } from '../../core/bigmodel/bigmodel.service';
+import { PdfParserService } from '../../core/pdf/pdf-parser.service';
+import { SseEventsService } from '../../core/sse/sse-events.service';
 
 @Injectable()
 export class ScreeningOrchestratorService {

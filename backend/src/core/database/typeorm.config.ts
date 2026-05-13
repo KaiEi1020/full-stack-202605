@@ -1,9 +1,9 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { JobRequirementEntity } from './job-requirement.entity';
-import { ResumeEntity } from './resume.entity';
-import { UserEntity } from './user.entity';
+import { JobRequirementEntity } from '../../modules/candidate/entities/job-requirement.entity';
+import { ResumeEntity } from '../../modules/candidate/entities/resume.entity';
+import { UserEntity } from '../../modules/user/infrastructure/persistence/entities/user.entity';
 
 export function createTypeOrmOptions(): TypeOrmModuleOptions {
   const databasePath =

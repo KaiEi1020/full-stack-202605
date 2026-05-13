@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ResumeEntity } from '../database';
+import { ResumeEntity } from '../candidate/entities';
 import { ScreeningModule } from '../screening/screening.module';
 import { ResumeUploadController } from './resume-upload.controller';
 import { ResumeUploadService } from './resume-upload.service';

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserQueryService } from './application/user-query.service';
 import { RegisterUserService } from './application/register-user.service';
-import { UserEntity } from '../database';
+import { UserEntity } from './infrastructure/persistence/entities/user.entity';
 import { USER_REPOSITORY } from './domain/user.repository';
 import { TypeOrmUserRepository } from './infrastructure/typeorm-user.repository';
 import { SmsNotificationPublisher } from './infrastructure/sms-notification.publisher';

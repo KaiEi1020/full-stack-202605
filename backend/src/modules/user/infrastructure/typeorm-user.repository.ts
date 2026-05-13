@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserEntity } from '../../database';
+import { UserEntity } from './persistence/entities/user.entity';
 import { CreateUserInput, UserRepository } from '../domain/user.repository';
 import { User } from '../models/user.model';
 

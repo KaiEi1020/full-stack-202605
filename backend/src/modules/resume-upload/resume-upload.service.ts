@@ -7,9 +7,9 @@ import {
   JobStatus,
   ParseStatus,
   ResumeEntity,
-} from '../database';
+} from '../candidate/entities';
 import { ScreeningOrchestratorService } from '../screening/screening-orchestrator.service';
-import { FsStorageService } from '../storage/fs-storage.service';
+import { FsStorageService } from '../../core/storage/fs-storage.service';
 import { UploadedPdfFile } from './uploaded-pdf-file.type';
 
 @Injectable()
