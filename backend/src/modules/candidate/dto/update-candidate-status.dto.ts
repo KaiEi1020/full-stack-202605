@@ -1,6 +1,6 @@
 import { CandidateStatus } from '../entities';
 
-export class UpdateCandidateStatusInput {
+export class UpdateCandidateStatusDto {
   candidateId!: string;
   status!: CandidateStatus;
 }

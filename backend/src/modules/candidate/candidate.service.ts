@@ -4,10 +4,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JobRequirementEntity, ResumeEntity } from './entities';
 import { BigModelService } from '../../core/bigmodel/bigmodel.service';
-import { SaveCandidateCorrectionInput } from './dto/save-candidate-correction.input';
-import { ScoreCandidateInput } from './dto/score-candidate.input';
-import { UpdateCandidateStatusInput } from './dto/update-candidate-status.input';
-import { UpsertJobRequirementInput } from './dto/upsert-job-requirement.input';
+import { SaveCandidateCorrectionDto } from './dto/save-candidate-correction.dto';
+import { ScoreCandidateDto } from './dto/score-candidate.dto';
+import { UpdateCandidateStatusDto } from './dto/update-candidate-status.dto';
+import { UpsertJobRequirementDto } from './dto/upsert-job-requirement.dto';
 
 @Injectable()
 export class CandidateService {
@@ -34,7 +34,7 @@ export class CandidateService {
     return this.toCandidateView(item);
   }
 
-  async updateStatus(input: UpdateCandidateStatusInput) {
+  async updateStatus(input: UpdateCandidateStatusDto) {
     const item = await this.resumeRepository.findOne({
       where: { id: input.candidateId },
     });
@@ -46,7 +46,7 @@ export class CandidateService {
     return this.getCandidateOrThrow(input.candidateId);
   }
 
-  async saveCorrection(input: SaveCandidateCorrectionInput) {
+  async saveCorrection(input: SaveCandidateCorrectionDto) {
     const item = await this.resumeRepository.findOne({
       where: { id: input.candidateId },
     });
@@ -58,7 +58,7 @@ export class CandidateService {
     return this.getCandidateOrThrow(input.candidateId);
   }
 
-  async upsertJobRequirement(input: UpsertJobRequirementInput) {
+  async upsertJobRequirement(input: UpsertJobRequirementDto) {
     const id = input.id ?? randomUUID();
     const entity = this.jobRequirementRepository.create({
       id,
@@ -78,7 +78,7 @@ export class CandidateService {
     return items.map((item) => this.toJobRequirementView(item));
   }
 
-  async scoreCandidate(input: ScoreCandidateInput) {
+  async scoreCandidate(input: ScoreCandidateDto) {
     const resume = await this.resumeRepository.findOne({
       where: { id: input.candidateId },
     });

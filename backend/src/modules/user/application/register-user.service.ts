@@ -3,7 +3,7 @@ import type { UserRepository } from '../domain/user.repository';
 import { USER_REPOSITORY } from '../domain/user.repository';
 import { User } from '../models/user.model';
 import { SmsNotificationPublisher } from '../infrastructure/sms-notification.publisher';
-import { RegisterUserInput } from '../register-user.input';
+import { RegisterUserDto } from '../register-user.dto';
 
 @Injectable()
 export class RegisterUserService {
@@ -12,7 +12,7 @@ export class RegisterUserService {
     private readonly smsNotificationPublisher: SmsNotificationPublisher,
   ) {}
 
-  async execute(input: RegisterUserInput): Promise<User> {
+  async execute(input: RegisterUserDto): Promise<User> {
     const name = input.name.trim();
     const phone = input.phone.trim();
 

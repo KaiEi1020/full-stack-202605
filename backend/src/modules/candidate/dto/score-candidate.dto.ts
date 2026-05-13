@@ -1,4 +1,4 @@
-export class ScoreCandidateInput {
+export class ScoreCandidateDto {
   candidateId!: string;
   jobRequirementId?: string;
   jdText!: string;

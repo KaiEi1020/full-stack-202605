@@ -1,4 +1,4 @@
-export class RegisterUserInput {
+export class RegisterUserDto {
   name!: string;
   phone!: string;
 }

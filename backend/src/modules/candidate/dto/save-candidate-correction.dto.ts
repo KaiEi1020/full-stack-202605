@@ -1,4 +1,4 @@
-export class SaveCandidateCorrectionInput {
+export class SaveCandidateCorrectionDto {
   candidateId!: string;
   correctedJson!: string;
 }

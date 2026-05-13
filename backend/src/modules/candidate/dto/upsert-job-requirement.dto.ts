@@ -1,4 +1,4 @@
-export class UpsertJobRequirementInput {
+export class UpsertJobRequirementDto {
   id?: string;
   title!: string;
   description!: string;

@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { CandidateService } from './candidate.service';
-import { ScoreCandidateInput } from './dto/score-candidate.input';
-import { UpdateCandidateStatusInput } from './dto/update-candidate-status.input';
-import { UpsertJobRequirementInput } from './dto/upsert-job-requirement.input';
+import { ScoreCandidateDto } from './dto/score-candidate.dto';
+import { UpdateCandidateStatusDto } from './dto/update-candidate-status.dto';
+import { UpsertJobRequirementDto } from './dto/upsert-job-requirement.dto';
 
 @Controller('api')
 export class CandidateController {
@@ -21,7 +21,7 @@ export class CandidateController {
   @Patch('resumes/:id/status')
   updateResumeStatus(
     @Param('id') id: string,
-    @Body() body: { status: UpdateCandidateStatusInput['status'] },
+    @Body() body: { status: UpdateCandidateStatusDto['status'] },
   ) {
     return this.candidateService.updateStatus({
       candidateId: id,
@@ -43,7 +43,7 @@ export class CandidateController {
   @Post('resumes/:id/score')
   scoreResume(
     @Param('id') id: string,
-    @Body() body: Omit<ScoreCandidateInput, 'candidateId'>,
+    @Body() body: Omit<ScoreCandidateDto, 'candidateId'>,
   ) {
     return this.candidateService.scoreCandidate({ candidateId: id, ...body });
   }
@@ -54,7 +54,7 @@ export class CandidateController {
   }
 
   @Post('job-requirements')
-  upsertJobRequirement(@Body() input: UpsertJobRequirementInput) {
+  upsertJobRequirement(@Body() input: UpsertJobRequirementDto) {
     return this.candidateService.upsertJobRequirement(input);
   }
 }

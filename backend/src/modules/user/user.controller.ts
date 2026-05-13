@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { RegisterUserService } from './application/register-user.service';
 import { UserQueryService } from './application/user-query.service';
-import { RegisterUserInput } from './register-user.input';
+import { RegisterUserDto } from './register-user.dto';
 
 @Controller('api/users')
 export class UserController {
@@ -21,7 +21,7 @@ export class UserController {
   }
 
   @Post()
-  registerUser(@Body() input: RegisterUserInput) {
+  registerUser(@Body() input: RegisterUserDto) {
     return this.registerUserService.execute(input);
   }
 }
