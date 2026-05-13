@@ -1,8 +1,4 @@
-## Purpose
-
-TBD
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: 后端必须通过分层模块装配用户查询能力
 系统 MUST 在当前实现中根据模块复杂度，通过 REST 控制器、应用服务、领域边界、基础设施实现或直接 CRUD 服务装配后端能力；对于仅包含单一纯逻辑且无外部依赖的 PDF 能力，系统 MUST 允许其直接作为贴近业务 feature 的 helper 或类实现，而不强制创建独立 Nest module。
