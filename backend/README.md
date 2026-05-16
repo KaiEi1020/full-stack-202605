@@ -51,10 +51,6 @@ your-project/
 │   │   │   │   ├── service/
 │   │   │   │   └── repository/
 │   │   │   └── infrastructure/    # 基础设施层（持久化实现、第三方服务适配）
-│   │   │       ├── persistence/
-│   │   │       │   ├── orm/
-│   │   │       │   └── repository/
-│   │   │       └── external/
 │   │   ├── user/                  # 用户领域
 │   │   ├── auth/                  # 认证领域
 │   │   ├── jobs/                  # 职位/岗位相关业务领域

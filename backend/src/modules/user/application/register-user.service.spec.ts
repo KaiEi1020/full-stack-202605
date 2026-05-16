@@ -34,18 +34,18 @@ describe('RegisterUserService', () => {
     await expect(
       service.execute({ name: ' Ada ', phone: '13800000000' }),
     ).resolves.toEqual(createdUser);
-    expect(userRepository.create).toHaveBeenCalledWith({
+    expect(jest.spyOn(userRepository, 'create')).toHaveBeenCalledWith({
       name: 'Ada',
       phone: '13800000000',
       email: '13800000000@example.com',
     });
-    expect(smsNotificationPublisher.publishUserRegistered).toHaveBeenCalledWith(
-      {
-        userId: '1',
-        name: 'Ada',
-        phone: '13800000000',
-      },
-    );
+    expect(
+      jest.spyOn(smsNotificationPublisher, 'publishUserRegistered'),
+    ).toHaveBeenCalledWith({
+      userId: '1',
+      name: 'Ada',
+      phone: '13800000000',
+    });
   });
 
   it('rejects duplicate phone registration', async () => {
@@ -54,9 +54,9 @@ describe('RegisterUserService', () => {
     await expect(
       service.execute({ name: 'Ada', phone: '13800000000' }),
     ).rejects.toBeInstanceOf(ConflictException);
-    expect(userRepository.create).not.toHaveBeenCalled();
+    expect(jest.spyOn(userRepository, 'create')).not.toHaveBeenCalled();
     expect(
-      smsNotificationPublisher.publishUserRegistered,
+      jest.spyOn(smsNotificationPublisher, 'publishUserRegistered'),
     ).not.toHaveBeenCalled();
   });
 });

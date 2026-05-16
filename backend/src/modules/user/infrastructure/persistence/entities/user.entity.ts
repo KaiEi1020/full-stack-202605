@@ -1,16 +1,23 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryKey,
+  Property,
+  Unique,
+} from '@mikro-orm/decorators/legacy';
 
-@Entity('users')
+@Entity({ tableName: 'users' })
 export class UserEntity {
-  @PrimaryColumn('text')
+  @PrimaryKey({ type: 'uuid' })
   id!: string;
 
-  @Column('text')
+  @Property()
   name!: string;
 
-  @Column('text', { unique: true })
+  @Property()
+  @Unique()
   email!: string;
 
-  @Column('text', { unique: true })
+  @Property()
+  @Unique()
   phone!: string;
 }

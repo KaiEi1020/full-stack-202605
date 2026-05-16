@@ -1,25 +1,19 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager } from '@mikro-orm/postgresql';
 import request, { type Response } from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 import { BigModelService } from './../src/core/bigmodel/bigmodel.service';
-import { ResumeEntity } from './../src/modules/recruitment/domain/entity/resume.entity';
-import {
-  JobApplicationEntity,
-  JobEntity,
-} from './../src/modules/recruitment/domain/entity';
+import { ResumeEntity } from './../src/modules/recruitment/infrastructure/persistence/entities/resume.entity';
+import { JobEntity } from './../src/modules/recruitment/infrastructure/persistence/entities/job.entity';
+import { JobApplicationEntity } from './../src/modules/recruitment/infrastructure/persistence/entities/job-application.entity';
 import { PdfParserService } from './../src/core/pdf/pdf-parser.service';
 import { UserEntity } from './../src/modules/user/infrastructure/persistence/entities/user.entity';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
-  let userRepository: Repository<UserEntity>;
-  let resumeRepository: Repository<ResumeEntity>;
-  let jobRepository: Repository<JobEntity>;
-  let applicationRepository: Repository<JobApplicationEntity>;
+  let em: EntityManager;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -62,35 +56,34 @@ describe('AppController (e2e)', () => {
     app.enableCors({ origin: true });
     await app.init();
 
-    userRepository = app.get(getRepositoryToken(UserEntity));
-    resumeRepository = app.get(getRepositoryToken(ResumeEntity));
-    jobRepository = app.get(getRepositoryToken(JobEntity));
-    applicationRepository = app.get(getRepositoryToken(JobApplicationEntity));
+    em = app.get(EntityManager);
 
-    await applicationRepository.clear();
-    await resumeRepository.clear();
-    await jobRepository.clear();
-    await userRepository.clear();
-    await userRepository.save([
-      {
-        id: '1',
-        name: 'Ada Lovelace',
-        email: 'ada@example.com',
-        phone: '13800000001',
-      },
-      {
-        id: '2',
-        name: 'Grace Hopper',
-        email: 'grace@example.com',
-        phone: '13800000002',
-      },
-      {
-        id: '3',
-        name: 'Linus Torvalds',
-        email: 'linus@example.com',
-        phone: '13800000003',
-      },
-    ]);
+    // Clean up tables in correct order (applications first due to potential FK)
+    await em.nativeDelete(JobApplicationEntity, {});
+    await em.nativeDelete(ResumeEntity, {});
+    await em.nativeDelete(JobEntity, {});
+    await em.nativeDelete(UserEntity, {});
+
+    // Seed users
+    em.create(UserEntity, {
+      id: '1',
+      name: 'Ada Lovelace',
+      email: 'ada@example.com',
+      phone: '13800000001',
+    });
+    em.create(UserEntity, {
+      id: '2',
+      name: 'Grace Hopper',
+      email: 'grace@example.com',
+      phone: '13800000002',
+    });
+    em.create(UserEntity, {
+      id: '3',
+      name: 'Linus Torvalds',
+      email: 'linus@example.com',
+      phone: '13800000003',
+    });
+    await em.flush();
   });
 
   it('/ (GET)', () => {
@@ -160,8 +153,8 @@ describe('AppController (e2e)', () => {
       })
       .expect(201);
 
-    const resumes = await resumeRepository.find();
-    const applications = await applicationRepository.find();
+    const resumes = await em.find(ResumeEntity, {});
+    const applications = await em.find(JobApplicationEntity, {});
     expect(resumes.length).toBe(1);
     expect(applications.length).toBe(1);
   });
@@ -189,7 +182,7 @@ describe('AppController (e2e)', () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     const body = response.body as Array<{ applicationId: string }>;
-    const application = await applicationRepository.findOneByOrFail({
+    const application = await em.findOneOrFail(JobApplicationEntity, {
       id: body[0].applicationId,
     });
     expect(application.status).toBe('PASSED');

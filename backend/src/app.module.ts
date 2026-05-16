@@ -1,10 +1,8 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BigModelModule } from './core/bigmodel/bigmodel.module';
 import { DatabaseModule } from './core/database/database.module';
-import { createTypeOrmOptions } from './core/database/typeorm.config';
 import { PdfModule } from './core/pdf/pdf.module';
 import { StorageModule } from './core/storage/storage.module';
 import { SseModule } from './core/sse/sse.module';
@@ -14,7 +12,6 @@ import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(createTypeOrmOptions()),
     DatabaseModule,
     StorageModule,
     SseModule,

@@ -13,7 +13,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "db:reset": "rm -f data.sqlite",
+    "db:reset": "echo 'Use docker compose to manage PostgreSQL'",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -22,17 +22,19 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@mikro-orm/core": "^7.0.16",
+    "@mikro-orm/decorators": "^7",
+    "@mikro-orm/nestjs": "^7.0.1",
+    "@mikro-orm/postgresql": "^7.0.16",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
-    "@nestjs/typeorm": "^11.0.0",
-    "sql.js": "^1.13.0",
     "dotenv": "^17.4.2",
     "express": "^5.1.0",
     "pdf-parse": "^2.4.5",
+    "pg": "^8.20.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1",
-    "typeorm": "^0.3.25"
+    "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

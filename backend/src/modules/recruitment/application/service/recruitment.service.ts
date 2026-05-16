@@ -1,13 +1,25 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Inject } from '@nestjs/common';
 import { BigModelService } from '../../../../core/bigmodel/bigmodel.service';
 import { SubmissionStatus } from '../../domain/vo/submission-status.enum';
-import { ResumeEntity } from '../../domain/entity/resume.entity';
 import { ParseStatus } from '../../domain/vo/parse-status.enum';
 import { ScreeningStatus } from '../../domain/vo/screening-status.enum';
-import { JobApplicationEntity, JobEntity } from '../../domain/entity';
+import { ResumeEntity } from '../../infrastructure/persistence/entities/resume.entity';
+import { JobEntity } from '../../infrastructure/persistence/entities/job.entity';
+import { JobApplicationEntity } from '../../infrastructure/persistence/entities/job-application.entity';
+import {
+  RESUME_REPOSITORY,
+  type ResumeRepository,
+} from '../../domain/repository/resume.repository';
+import {
+  JOB_REPOSITORY,
+  type JobRepository,
+} from '../../domain/repository/job.repository';
+import {
+  JOB_APPLICATION_REPOSITORY,
+  type JobApplicationRepository,
+} from '../../domain/repository/job-application.repository';
 
 type ApplicationView = {
   id: string;
@@ -35,12 +47,12 @@ type ApplicationView = {
 @Injectable()
 export class RecruitmentService {
   constructor(
-    @InjectRepository(ResumeEntity)
-    private readonly resumeRepository: Repository<ResumeEntity>,
-    @InjectRepository(JobEntity)
-    private readonly jobRepository: Repository<JobEntity>,
-    @InjectRepository(JobApplicationEntity)
-    private readonly applicationRepository: Repository<JobApplicationEntity>,
+    @Inject(RESUME_REPOSITORY)
+    private readonly resumeRepo: ResumeRepository,
+    @Inject(JOB_REPOSITORY)
+    private readonly jobRepo: JobRepository,
+    @Inject(JOB_APPLICATION_REPOSITORY)
+    private readonly applicationRepo: JobApplicationRepository,
     private readonly bigModelService: BigModelService,
   ) {}
 
@@ -51,26 +63,26 @@ export class RecruitmentService {
     preferredSkills: string[];
     id?: string;
   }) {
-    const entity = this.jobRepository.create({
+    const entity = this.jobRepo.create({
       id: input.id ?? randomUUID(),
       title: input.title,
       description: input.description,
       requiredSkillsJson: JSON.stringify(input.requiredSkills),
       preferredSkillsJson: JSON.stringify(input.preferredSkills),
     });
-    await this.jobRepository.save(entity);
+    await this.jobRepo.save(entity);
     return this.toJobView(entity);
   }
 
   async listJobs() {
-    const items = await this.jobRepository.find({
-      order: { updatedAt: 'desc' },
+    const items = await this.jobRepo.findAll({
+      orderBy: { updatedAt: 'desc' },
     });
     return items.map((item) => this.toJobView(item));
   }
 
   async getJob(jobId: string) {
-    const job = await this.jobRepository.findOne({ where: { id: jobId } });
+    const job = await this.jobRepo.findById(jobId);
     if (!job) {
       throw new NotFoundException('岗位不存在');
     }
@@ -89,9 +101,7 @@ export class RecruitmentService {
     requiredSkills: string[];
     preferredSkills: string[];
   }) {
-    const job = await this.jobRepository.findOne({
-      where: { id: input.jobId },
-    });
+    const job = await this.jobRepo.findById(input.jobId);
     if (!job) {
       throw new NotFoundException('岗位不存在');
     }
@@ -112,23 +122,22 @@ export class RecruitmentService {
           ? input.preferredSkills
           : this.parseJsonArray(job.preferredSkillsJson),
       );
-      await this.jobRepository.save(job);
+      await this.jobRepo.save(job);
     }
 
     const resumeId = randomUUID();
     const applicationId = randomUUID();
-    await this.resumeRepository.save(
-      this.resumeRepository.create({
-        id: resumeId,
-        originalName: input.file.originalname,
-        storagePath: input.file.storagePath,
-        mimeType: input.file.mimetype,
-        sizeBytes: input.file.size,
-        parseStatus: ParseStatus.PENDING,
-      }),
-    );
+    const resume = this.resumeRepo.create({
+      id: resumeId,
+      originalName: input.file.originalname,
+      storagePath: input.file.storagePath,
+      mimeType: input.file.mimetype,
+      sizeBytes: input.file.size,
+      parseStatus: ParseStatus.PENDING,
+    });
+    await this.resumeRepo.save(resume);
 
-    const application = this.applicationRepository.create({
+    const application = this.applicationRepo.create({
       id: applicationId,
       jobId: job.id,
       resumeId,
@@ -138,7 +147,7 @@ export class RecruitmentService {
       eventHistoryJson: JSON.stringify([]),
       scoreHistoryJson: JSON.stringify([]),
     });
-    await this.applicationRepository.save(application);
+    await this.applicationRepo.save(application);
 
     return {
       applicationId,
@@ -149,8 +158,8 @@ export class RecruitmentService {
 
   async listApplications() {
     const [applications, resumes] = await Promise.all([
-      this.applicationRepository.find({ order: { createdAt: 'desc' } }),
-      this.resumeRepository.find(),
+      this.applicationRepo.findAll({ orderBy: { createdAt: 'desc' } }),
+      this.resumeRepo.findAll(),
     ]);
     const resumeById = new Map(resumes.map((item) => [item.id, item]));
     return applications.map((application) =>
@@ -168,9 +177,7 @@ export class RecruitmentService {
   }
 
   async getApplicationOrThrow(applicationId: string) {
-    const application = await this.applicationRepository.findOne({
-      where: { id: applicationId },
-    });
+    const application = await this.applicationRepo.findById(applicationId);
     if (!application) {
       throw new NotFoundException('投递不存在');
     }
@@ -178,7 +185,7 @@ export class RecruitmentService {
   }
 
   async getResumeOrThrow(resumeId: string) {
-    return this.resumeRepository.findOneByOrFail({ id: resumeId });
+    return this.resumeRepo.findByIdOrFail(resumeId);
   }
 
   async markParsingStarted(applicationId: string, resumeId: string) {
@@ -191,8 +198,8 @@ export class RecruitmentService {
     application.screeningStartedAt = new Date();
     resume.parseStatus = ParseStatus.PENDING;
     await Promise.all([
-      this.applicationRepository.save(application),
-      this.resumeRepository.save(resume),
+      this.applicationRepo.save(application),
+      this.resumeRepo.save(resume),
     ]);
   }
 
@@ -213,8 +220,8 @@ export class RecruitmentService {
     resume.parseErrorMessage = null;
     application.screeningStage = 'extracting';
     await Promise.all([
-      this.applicationRepository.save(application),
-      this.resumeRepository.save(resume),
+      this.applicationRepo.save(application),
+      this.resumeRepo.save(resume),
     ]);
   }
 
@@ -249,8 +256,8 @@ export class RecruitmentService {
     resume.extractedAt = new Date();
     application.screeningStage = 'scoring';
     await Promise.all([
-      this.applicationRepository.save(application),
-      this.resumeRepository.save(resume),
+      this.applicationRepo.save(application),
+      this.resumeRepo.save(resume),
     ]);
   }
 
@@ -299,7 +306,7 @@ export class RecruitmentService {
     application.screeningStatus = ScreeningStatus.SUCCEEDED;
     application.screeningStage = 'completed';
     application.screeningFinishedAt = new Date();
-    await this.applicationRepository.save(application);
+    await this.applicationRepo.save(application);
   }
 
   async markScreeningFailed(
@@ -319,8 +326,8 @@ export class RecruitmentService {
     resume.parseStatus = ParseStatus.FAILED;
     resume.parseErrorMessage = message;
     await Promise.all([
-      this.applicationRepository.save(application),
-      this.resumeRepository.save(resume),
+      this.applicationRepo.save(application),
+      this.resumeRepo.save(resume),
     ]);
   }
 
@@ -347,24 +354,22 @@ export class RecruitmentService {
     );
     history.push(event);
     application.eventHistoryJson = JSON.stringify(history);
-    await this.applicationRepository.save(application);
+    await this.applicationRepo.save(application);
     return event;
   }
 
   async updateApplicationStatus(applicationId: string, status: string) {
     const application = await this.getApplicationOrThrow(applicationId);
     application.status = status as SubmissionStatus;
-    await this.applicationRepository.save(application);
+    await this.applicationRepo.save(application);
     return this.getApplicationView(applicationId);
   }
 
   async saveResumeCorrection(resumeId: string, correctedJson: string) {
     const resume = await this.getResumeOrThrow(resumeId);
     resume.correctedJson = correctedJson;
-    await this.resumeRepository.save(resume);
-    const application = await this.applicationRepository.findOne({
-      where: { resumeId },
-    });
+    await this.resumeRepo.save(resume);
+    const application = await this.applicationRepo.findByResumeId(resumeId);
     return application ? this.getApplicationView(application.id) : null;
   }
 
@@ -408,15 +413,13 @@ export class RecruitmentService {
     application.educationScore = result.educationScore;
     application.aiComment = result.aiComment;
     application.scoreHistoryJson = JSON.stringify(history);
-    await this.applicationRepository.save(application);
+    await this.applicationRepo.save(application);
     return this.getApplicationView(input.applicationId);
   }
 
   async listJobRankings(jobId: string) {
-    const applications = await this.applicationRepository.find({
-      where: { jobId },
-    });
-    const resumes = await this.resumeRepository.find();
+    const applications = await this.applicationRepo.findByJobId(jobId);
+    const resumes = await this.resumeRepo.findAll();
     const resumeById = new Map(resumes.map((item) => [item.id, item]));
     return applications
       .filter((item) => item.overallScore !== null)
@@ -437,7 +440,7 @@ export class RecruitmentService {
 
   private async getJobForApplication(applicationId: string) {
     const application = await this.getApplicationOrThrow(applicationId);
-    return this.jobRepository.findOneByOrFail({ id: application.jobId });
+    return this.jobRepo.findByIdOrFail(application.jobId);
   }
 
   private toJobView(item: JobEntity) {

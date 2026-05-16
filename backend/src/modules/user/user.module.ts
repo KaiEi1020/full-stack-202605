@@ -1,22 +1,22 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { UserQueryService } from './application/user-query.service';
 import { RegisterUserService } from './application/register-user.service';
 import { UserEntity } from './infrastructure/persistence/entities/user.entity';
 import { USER_REPOSITORY } from './domain/user.repository';
-import { TypeOrmUserRepository } from './infrastructure/typeorm-user.repository';
+import { MikroOrmUserRepository } from './infrastructure/repositories/mikroorm-user.repository';
 import { SmsNotificationPublisher } from './infrastructure/sms-notification.publisher';
 import { UserController } from './user.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [MikroOrmModule.forFeature([UserEntity])],
   controllers: [UserController],
   providers: [
     UserQueryService,
     RegisterUserService,
     SmsNotificationPublisher,
-    TypeOrmUserRepository,
-    { provide: USER_REPOSITORY, useExisting: TypeOrmUserRepository },
+    MikroOrmUserRepository,
+    { provide: USER_REPOSITORY, useExisting: MikroOrmUserRepository },
   ],
 })
 export class UserModule {}
