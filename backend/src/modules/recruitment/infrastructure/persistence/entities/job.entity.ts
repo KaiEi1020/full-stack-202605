@@ -1,25 +1,17 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import { Entity, Property } from '@mikro-orm/decorators/legacy';
+import { BaseEntity } from '../../../../../common/entities/base.entity';
 
 @Entity({ tableName: 'jobs' })
-export class JobEntity {
-  @PrimaryKey({ type: 'uuid' })
-  id!: string;
+export class JobEntity extends BaseEntity {
+  @Property()
+  title: string = '';
 
   @Property()
-  title!: string;
+  description: string = '';
 
   @Property()
-  description!: string;
+  requiredSkillsJson: string = '';
 
   @Property()
-  requiredSkillsJson!: string;
-
-  @Property()
-  preferredSkillsJson!: string;
-
-  @Property({ onCreate: () => new Date() })
-  createdAt!: Date;
-
-  @Property({ onUpdate: () => new Date() })
-  updatedAt!: Date;
+  preferredSkillsJson: string = '';
 }

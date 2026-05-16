@@ -1,89 +1,81 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import { Entity, Property, Enum } from '@mikro-orm/decorators/legacy';
 import { ParseStatus } from '../../../domain/vo/parse-status.enum';
+import { BaseEntity } from '../../../../../common/entities/base.entity';
 
 @Entity({ tableName: 'resumes' })
-export class ResumeEntity {
-  @PrimaryKey({ type: 'uuid' })
-  id!: string;
+export class ResumeEntity extends BaseEntity {
+  @Property({ nullable: true })
+  name: string | null = null;
 
   @Property({ nullable: true })
-  name!: string | null;
+  phone: string | null = null;
 
   @Property({ nullable: true })
-  phone!: string | null;
+  email: string | null = null;
 
   @Property({ nullable: true })
-  email!: string | null;
+  city: string | null = null;
 
   @Property({ nullable: true })
-  city!: string | null;
+  resumeSummary: string | null = null;
 
   @Property({ nullable: true })
-  resumeSummary!: string | null;
+  highlightedStrengths: string | null = null;
 
   @Property({ nullable: true })
-  highlightedStrengths!: string | null;
+  highlightedWeaknesses: string | null = null;
 
   @Property({ nullable: true })
-  highlightedWeaknesses!: string | null;
+  originalName: string | null = null;
 
   @Property({ nullable: true })
-  originalName!: string | null;
+  storagePath: string | null = null;
 
   @Property({ nullable: true })
-  storagePath!: string | null;
-
-  @Property({ nullable: true })
-  mimeType!: string | null;
+  mimeType: string | null = null;
 
   @Property({ type: 'integer', nullable: true })
-  sizeBytes!: number | null;
+  sizeBytes: number | null = null;
 
   @Property({ type: 'integer', nullable: true })
-  pageCount!: number | null;
+  pageCount: number | null = null;
 
   @Property({ nullable: true })
-  rawText!: string | null;
+  rawText: string | null = null;
 
   @Property({ nullable: true })
-  cleanedText!: string | null;
+  cleanedText: string | null = null;
 
-  @Property({ default: ParseStatus.PENDING })
-  parseStatus!: ParseStatus;
-
-  @Property({ nullable: true })
-  parseErrorMessage!: string | null;
-
-  @Property({ type: 'timestamptz', nullable: true })
-  parsedAt!: Date | null;
+  @Enum({ items: () => ParseStatus, default: ParseStatus.PENDING })
+  parseStatus: ParseStatus = ParseStatus.PENDING;
 
   @Property({ nullable: true })
-  basicInfoJson!: string | null;
+  parseErrorMessage: string | null = null;
 
   @Property({ nullable: true })
-  educationJson!: string | null;
+  parsedAt: Date | null = null;
 
   @Property({ nullable: true })
-  workExperienceJson!: string | null;
+  basicInfoJson: string | null = null;
 
   @Property({ nullable: true })
-  skillsJson!: string | null;
+  educationJson: string | null = null;
 
   @Property({ nullable: true })
-  projectJson!: string | null;
+  workExperienceJson: string | null = null;
 
   @Property({ nullable: true })
-  rawModelOutput!: string | null;
+  skillsJson: string | null = null;
 
   @Property({ nullable: true })
-  correctedJson!: string | null;
+  projectJson: string | null = null;
 
-  @Property({ type: 'timestamptz', nullable: true })
-  extractedAt!: Date | null;
+  @Property({ nullable: true })
+  rawModelOutput: string | null = null;
 
-  @Property({ onCreate: () => new Date() })
-  createdAt!: Date;
+  @Property({ nullable: true })
+  correctedJson: string | null = null;
 
-  @Property({ onUpdate: () => new Date() })
-  updatedAt!: Date;
+  @Property({ nullable: true })
+  extractedAt: Date | null = null;
 }

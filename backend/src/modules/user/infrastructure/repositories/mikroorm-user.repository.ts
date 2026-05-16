@@ -32,6 +32,8 @@ export class MikroOrmUserRepository implements UserRepository {
       name: input.name,
       email: input.email,
       phone: input.phone,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
     this.em.persist(entity);
     await this.em.flush();

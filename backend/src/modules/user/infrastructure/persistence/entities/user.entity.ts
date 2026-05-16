@@ -1,23 +1,16 @@
-import {
-  Entity,
-  PrimaryKey,
-  Property,
-  Unique,
-} from '@mikro-orm/decorators/legacy';
+import { Entity, Property, Unique } from '@mikro-orm/decorators/legacy';
+import { BaseEntity } from '../../../../../common/entities/base.entity';
 
 @Entity({ tableName: 'users' })
-export class UserEntity {
-  @PrimaryKey({ type: 'uuid' })
-  id!: string;
-
+export class UserEntity extends BaseEntity {
   @Property()
-  name!: string;
+  name: string = '';
 
   @Property()
   @Unique()
-  email!: string;
+  email: string = '';
 
   @Property()
   @Unique()
-  phone!: string;
+  phone: string = '';
 }

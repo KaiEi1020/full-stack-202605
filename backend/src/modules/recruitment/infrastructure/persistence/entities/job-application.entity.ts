@@ -1,60 +1,52 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import { Entity, Property, Enum } from '@mikro-orm/decorators/legacy';
 import { SubmissionStatus } from '../../../domain/vo/submission-status.enum';
 import { ScreeningStatus } from '../../../domain/vo/screening-status.enum';
+import { BaseEntity } from '../../../../../common/entities/base.entity';
 
 @Entity({ tableName: 'applications' })
-export class JobApplicationEntity {
-  @PrimaryKey({ type: 'uuid' })
-  id!: string;
+export class JobApplicationEntity extends BaseEntity {
+  @Property()
+  jobId: string = '';
 
   @Property()
-  jobId!: string;
+  resumeId: string = '';
 
-  @Property()
-  resumeId!: string;
+  @Enum({ items: () => SubmissionStatus, default: SubmissionStatus.PENDING })
+  status: SubmissionStatus = SubmissionStatus.PENDING;
 
-  @Property({ default: SubmissionStatus.PENDING })
-  status!: SubmissionStatus;
-
-  @Property({ default: ScreeningStatus.PENDING })
-  screeningStatus!: ScreeningStatus;
+  @Enum({ items: () => ScreeningStatus, default: ScreeningStatus.PENDING })
+  screeningStatus: ScreeningStatus = ScreeningStatus.PENDING;
 
   @Property({ nullable: true })
-  screeningStage!: string | null;
+  screeningStage: string | null = null;
 
   @Property({ nullable: true })
-  screeningErrorMessage!: string | null;
+  screeningErrorMessage: string | null = null;
 
-  @Property({ type: 'timestamptz', nullable: true })
-  screeningStartedAt!: Date | null;
+  @Property({ nullable: true })
+  screeningStartedAt: Date | null = null;
 
-  @Property({ type: 'timestamptz', nullable: true })
-  screeningFinishedAt!: Date | null;
+  @Property({ nullable: true })
+  screeningFinishedAt: Date | null = null;
 
   @Property({ type: 'integer', nullable: true })
-  overallScore!: number | null;
+  overallScore: number | null = null;
 
   @Property({ type: 'integer', nullable: true })
-  skillScore!: number | null;
+  skillScore: number | null = null;
 
   @Property({ type: 'integer', nullable: true })
-  experienceScore!: number | null;
+  experienceScore: number | null = null;
 
   @Property({ type: 'integer', nullable: true })
-  educationScore!: number | null;
+  educationScore: number | null = null;
 
   @Property({ nullable: true })
-  aiComment!: string | null;
+  aiComment: string | null = null;
 
   @Property({ nullable: true })
-  scoreHistoryJson!: string | null;
+  scoreHistoryJson: string | null = null;
 
   @Property({ nullable: true })
-  eventHistoryJson!: string | null;
-
-  @Property({ onCreate: () => new Date() })
-  createdAt!: Date;
-
-  @Property({ onUpdate: () => new Date() })
-  updatedAt!: Date;
+  eventHistoryJson: string | null = null;
 }
