@@ -1,6 +1,6 @@
 ## Purpose
 
-TBD
+定义后端使用 MikroORM 与 PostgreSQL 的持久化集成事实来源，包括连接初始化、NestJS 集成、实体映射与环境变量约束。
 
 ## Requirements
 

@@ -1,6 +1,6 @@
 ## Purpose
 
-TBD
+定义项目根目录 `docker-compose.yml` 中 PostgreSQL 服务的部署级事实来源，包括数据库容器、持久化、健康检查以及对后端服务的连接约束。
 
 ## Requirements
 

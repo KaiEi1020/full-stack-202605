@@ -1,11 +1,11 @@
 ## Purpose
 
-TBD
+定义项目根目录 `docker-compose.local.yml` 作为本地开发 PostgreSQL 的单一事实来源，使开发者能够在不启动 frontend/backend 容器的情况下独立获得可复用的本地数据库环境。
 
 ## Requirements
 
 ### Requirement: 必须提供 docker-compose.local.yml 用于本地开发
-系统 MUST 在项目根目录提供 `docker-compose.local.yml`，其中仅包含 PostgreSQL 服务，供开发者在本地独立启动数据库容器。
+系统 MUST 在项目根目录提供 `docker-compose.local.yml`，并将其作为本地开发 PostgreSQL 容器编排的单一事实来源；该文件仅包含 PostgreSQL 服务，供开发者在本地独立启动数据库容器。
 
 #### Scenario: 本地启动开发数据库
 - **WHEN** 开发者执行 `docker-compose -f docker-compose.local.yml up -d`
