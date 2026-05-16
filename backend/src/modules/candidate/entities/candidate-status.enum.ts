@@ -1,7 +1,0 @@
-export enum CandidateStatus {
-  PENDING = 'PENDING',
-  PASSED = 'PASSED',
-  INTERVIEWING = 'INTERVIEWING',
-  HIRED = 'HIRED',
-  REJECTED = 'REJECTED',
-}

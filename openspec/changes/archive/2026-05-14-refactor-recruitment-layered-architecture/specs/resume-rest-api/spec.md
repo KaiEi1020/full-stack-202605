@@ -1,8 +1,4 @@
-## Purpose
-
-TBD
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: 系统必须提供 RESTful 简历接口
 系统 MUST 继续通过标准 HTTP RESTful 接口提供简历资源及其相关候选人、上传、状态流转能力；在招聘领域重构后，这些接口 MUST 统一归属到 `recruitment/api` 层中的控制器实现，但不得因目录重组而改变既有业务语义。

@@ -7,6 +7,7 @@ import { GraphqlDemoPage } from './pages/GraphqlDemoPage';
 import { ResumeScorePage } from './pages/ResumeScorePage';
 import { UserRegistrationPage } from './pages/UserRegistrationPage';
 
+
 type Pathname = '/' | '/candidates' | '/candidate' | '/resume-score' | '/graphql-demo' | '/register' | 'not-found';
 
 type NavItem = {
@@ -111,13 +112,17 @@ function NotFoundPage() {
 
 function App() {
   const [pathname, setPathname] = useState<Pathname>(() => getPathname(window.location.pathname));
-  const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(() => new URLSearchParams(window.location.search).get('id'));
+  const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(
+    () => new URLSearchParams(window.location.search).get('applicationId'),
+  );
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
     const handlePopState = () => {
       setPathname(getPathname(window.location.pathname));
-      setSelectedCandidateId(new URLSearchParams(window.location.search).get('id'));
+      setSelectedApplicationId(
+        new URLSearchParams(window.location.search).get('applicationId'),
+      );
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -189,14 +194,14 @@ function App() {
       {pathname === '/' ? <HomePage /> : null}
       {pathname === '/candidates' ? (
         <CandidateListPage
-          onOpenDetail={(candidateId) => {
-            setSelectedCandidateId(candidateId);
-            navigate('/candidate', `?id=${candidateId}`);
+          onOpenDetail={(applicationId) => {
+            setSelectedApplicationId(applicationId);
+            navigate('/candidate', `?applicationId=${applicationId}`);
           }}
         />
       ) : null}
-      {pathname === '/candidate' && selectedCandidateId ? <CandidateDetailPage candidateId={selectedCandidateId} /> : null}
-      {pathname === '/resume-score' && selectedCandidateId ? <ResumeScorePage resumeId={selectedCandidateId} /> : null}
+      {pathname === '/candidate' && selectedApplicationId ? <CandidateDetailPage applicationId={selectedApplicationId} /> : null}
+      {pathname === '/resume-score' && selectedApplicationId ? <ResumeScorePage applicationId={selectedApplicationId} /> : null}
       {pathname === '/graphql-demo' ? <GraphqlDemoPage /> : null}
       {pathname === '/register' ? <UserRegistrationPage /> : null}
       {pathname === 'not-found' ? <NotFoundPage /> : null}

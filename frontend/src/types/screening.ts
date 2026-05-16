@@ -1,7 +1,7 @@
 export type UploadResponse = {
-  resumeId: string;
-  candidateId: string;
+  applicationId: string;
   jobId: string;
+  resumeId: string;
 };
 
 export type UploadBatchResponse = UploadResponse[];

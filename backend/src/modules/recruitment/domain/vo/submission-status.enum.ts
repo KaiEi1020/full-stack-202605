@@ -1,0 +1,7 @@
+export enum SubmissionStatus {
+  PENDING = 'PENDING',
+  PASSED = 'PASSED',
+  INTERVIEWING = 'INTERVIEWING',
+  HIRED = 'HIRED',
+  REJECTED = 'REJECTED',
+}

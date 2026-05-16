@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import type { ScreeningEvent } from '../types/screening';
 
-export function useScreeningEvents(candidateId: string | null) {
+export function useScreeningEvents(applicationId: string | null) {
   const [events, setEvents] = useState<ScreeningEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!candidateId) {
+    if (!applicationId) {
       return;
     }
-    const source = new EventSource(`/api/resumes/${candidateId}/events`);
+    const source = new EventSource(
+      `/api/recruitment/submissions/${applicationId}/events`,
+    );
     source.addEventListener('started', (event) => {
       setEvents((current) => [...current, JSON.parse((event as MessageEvent).data) as ScreeningEvent]);
     });
@@ -28,7 +30,7 @@ export function useScreeningEvents(candidateId: string | null) {
       source.close();
     };
     return () => source.close();
-  }, [candidateId]);
+  }, [applicationId]);
 
   return { events, error };
 }

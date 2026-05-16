@@ -6,6 +6,7 @@ export function useResumeUpload() {
   const [error, setError] = useState<string | null>(null);
 
   const upload = async (
+    jobId: string,
     files: File[],
     jdText: string,
     requiredSkills: string[],
@@ -19,7 +20,7 @@ export function useResumeUpload() {
       formData.append('jdText', jdText);
       formData.append('requiredSkills', JSON.stringify(requiredSkills));
       formData.append('preferredSkills', JSON.stringify(preferredSkills));
-      const response = await fetch('/api/resumes', {
+      const response = await fetch(`/api/recruitment/jobs/${jobId}/submissions/upload`, {
         method: 'POST',
         body: formData,
       });

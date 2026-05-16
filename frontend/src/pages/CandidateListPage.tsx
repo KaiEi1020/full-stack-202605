@@ -11,6 +11,8 @@ type CandidateSkill = string | { name?: string | null; label?: string | null; va
 
 type CandidateItem = {
   id: string;
+  resumeId: string;
+  jobId: string;
   name: string | null;
   email: string | null;
   status: string;
@@ -74,6 +76,7 @@ function getPipelineStatus(candidate: CandidateItem) {
 
 export function CandidateListPage({ onOpenDetail }: CandidateListPageProps) {
   const [data, setData] = useState<CandidateItem[]>([]);
+  const defaultJobId = 'default-job';
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -85,7 +88,7 @@ export function CandidateListPage({ onOpenDetail }: CandidateListPageProps) {
   const loadCandidates = useCallback(async () => {
     try {
       setLoading(true);
-      setData(await apiGet<CandidateItem[]>('/api/resumes'));
+      setData(await apiGet<CandidateItem[]>('/api/recruitment/submissions'));
       setError(null);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : '加载失败');
@@ -157,7 +160,13 @@ export function CandidateListPage({ onOpenDetail }: CandidateListPageProps) {
               <UploadForm
                 isUploading={isUploading}
                 onSubmit={async (files, jdText, requiredSkills, preferredSkills) => {
-                  const result = await upload(files, jdText, requiredSkills, preferredSkills);
+                  const result = await upload(
+                    defaultJobId,
+                    files,
+                    jdText,
+                    requiredSkills,
+                    preferredSkills,
+                  );
                   await loadCandidates();
                   setToastMessage(`已提交 ${result.length} 份简历，后台正在继续处理`);
                 }}

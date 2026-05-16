@@ -5,19 +5,21 @@ import { Repository } from 'typeorm';
 import request, { type Response } from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
-import { BigModelService } from './../src/bigmodel/bigmodel.service';
+import { BigModelService } from './../src/core/bigmodel/bigmodel.service';
+import { ResumeEntity } from './../src/modules/recruitment/domain/entity/resume.entity';
 import {
-  JobRequirementEntity,
-  ResumeEntity,
-  UserEntity,
-} from './../src/database';
-import { PdfParserService } from './../src/pdf/pdf-parser.service';
+  JobApplicationEntity,
+  JobEntity,
+} from './../src/modules/recruitment/domain/entity';
+import { PdfParserService } from './../src/core/pdf/pdf-parser.service';
+import { UserEntity } from './../src/modules/user/infrastructure/persistence/entities/user.entity';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
   let userRepository: Repository<UserEntity>;
   let resumeRepository: Repository<ResumeEntity>;
-  let jobRequirementRepository: Repository<JobRequirementEntity>;
+  let jobRepository: Repository<JobEntity>;
+  let applicationRepository: Repository<JobApplicationEntity>;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -62,12 +64,12 @@ describe('AppController (e2e)', () => {
 
     userRepository = app.get(getRepositoryToken(UserEntity));
     resumeRepository = app.get(getRepositoryToken(ResumeEntity));
-    jobRequirementRepository = app.get(
-      getRepositoryToken(JobRequirementEntity),
-    );
+    jobRepository = app.get(getRepositoryToken(JobEntity));
+    applicationRepository = app.get(getRepositoryToken(JobApplicationEntity));
 
+    await applicationRepository.clear();
     await resumeRepository.clear();
-    await jobRequirementRepository.clear();
+    await jobRepository.clear();
     await userRepository.clear();
     await userRepository.save([
       {
@@ -111,24 +113,47 @@ describe('AppController (e2e)', () => {
       .send({ name: 'New User', phone: '13800000009' })
       .expect(201);
 
-    expect(response.body.phone).toBe('13800000009');
+    expect((response.body as { phone: string }).phone).toBe('13800000009');
   });
 
   it('rejects non-pdf uploads', async () => {
+    await request(app.getHttpServer())
+      .post('/api/recruitment/jobs')
+      .send({
+        title: '前端工程师',
+        description: 'React',
+        requiredSkills: [],
+        preferredSkills: [],
+      })
+      .expect(201);
+
     const response: Response = await request(app.getHttpServer())
-      .post('/api/resumes')
+      .post('/api/recruitment/jobs/default-job/submissions/upload')
       .attach('files', Buffer.from('not-pdf'), {
         filename: 'resume.txt',
         contentType: 'text/plain',
       })
       .expect(400);
 
-    expect(response.body.message).toBe('仅支持 PDF 格式');
+    expect((response.body as { message: string }).message).toBe(
+      '仅支持 PDF 格式',
+    );
   });
 
-  it('creates a resume record after pdf upload', async () => {
+  it('creates a resume and application after pdf upload', async () => {
     await request(app.getHttpServer())
-      .post('/api/resumes')
+      .post('/api/recruitment/jobs')
+      .send({
+        title: '前端工程师',
+        description: 'React',
+        requiredSkills: [],
+        preferredSkills: [],
+        id: 'default-job',
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/api/recruitment/jobs/default-job/submissions/upload')
       .attach('files', Buffer.from('%PDF-1.4 mock'), {
         filename: 'resume.pdf',
         contentType: 'application/pdf',
@@ -136,12 +161,25 @@ describe('AppController (e2e)', () => {
       .expect(201);
 
     const resumes = await resumeRepository.find();
+    const applications = await applicationRepository.find();
     expect(resumes.length).toBe(1);
+    expect(applications.length).toBe(1);
   });
 
-  it('updates resume status after screening completes', async () => {
+  it('updates application status after screening completes', async () => {
+    await request(app.getHttpServer())
+      .post('/api/recruitment/jobs')
+      .send({
+        title: '前端工程师',
+        description: 'React',
+        requiredSkills: [],
+        preferredSkills: [],
+        id: 'default-job',
+      })
+      .expect(201);
+
     const response: Response = await request(app.getHttpServer())
-      .post('/api/resumes')
+      .post('/api/recruitment/jobs/default-job/submissions/upload')
       .attach('files', Buffer.from('%PDF-1.4 mock'), {
         filename: 'resume.pdf',
         contentType: 'application/pdf',
@@ -150,10 +188,11 @@ describe('AppController (e2e)', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    const resume = await resumeRepository.findOneByOrFail({
-      id: response.body.resumeId,
+    const body = response.body as Array<{ applicationId: string }>;
+    const application = await applicationRepository.findOneByOrFail({
+      id: body[0].applicationId,
     });
-    expect(resume.status).toBe('PASSED');
+    expect(application.status).toBe('PASSED');
   });
 
   afterEach(async () => {

@@ -6,6 +6,8 @@ import { apiGet, apiPatch } from '../lib/api';
 
 type CandidateDetail = {
   id: string;
+  resumeId: string;
+  jobId: string;
   name: string | null;
   phone: string | null;
   email: string | null;
@@ -26,12 +28,12 @@ type CandidateDetail = {
 };
 
 type CandidateDetailPageProps = {
-  candidateId: string;
+  applicationId: string;
 };
 
 const statusOptions = ['PENDING', 'PASSED', 'INTERVIEWING', 'HIRED', 'REJECTED'] as const;
 
-export function CandidateDetailPage({ candidateId }: CandidateDetailPageProps) {
+export function CandidateDetailPage({ applicationId }: CandidateDetailPageProps) {
   const [candidate, setCandidate] = useState<CandidateDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +41,7 @@ export function CandidateDetailPage({ candidateId }: CandidateDetailPageProps) {
   const load = async () => {
     try {
       setLoading(true);
-      setCandidate(await apiGet<CandidateDetail | null>(`/api/resumes/${candidateId}`));
+      setCandidate(await apiGet<CandidateDetail | null>(`/api/recruitment/submissions/${applicationId}`));
       setError(null);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : '加载失败');
@@ -50,7 +52,7 @@ export function CandidateDetailPage({ candidateId }: CandidateDetailPageProps) {
 
   useEffect(() => {
     void load();
-  }, [candidateId]);
+  }, [applicationId]);
 
   const score = candidate?.scores[0];
 
@@ -104,7 +106,7 @@ export function CandidateDetailPage({ candidateId }: CandidateDetailPageProps) {
                             : 'border-line bg-white text-ink-700 hover:border-accent-300 hover:text-accent-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-200',
                         ].join(' ')}
                         onClick={async () => {
-                          await apiPatch(`/api/resumes/${candidateId}/status`, { status });
+                          await apiPatch(`/api/recruitment/submissions/${applicationId}/status`, { status });
                           await load();
                         }}
                       >
@@ -118,7 +120,7 @@ export function CandidateDetailPage({ candidateId }: CandidateDetailPageProps) {
               <div className="rounded-[1.75rem] border border-line bg-white/85 p-5 dark:border-white/10 dark:bg-slate-950/40">
                 <h3 className="text-lg font-semibold text-ink-950 dark:text-white">人工修正</h3>
                 <p className="mt-2 text-sm text-ink-500 dark:text-slate-300">写入示例修正数据，验证人工回填链路。</p>
-                <button type="button" className="mt-4 inline-flex items-center rounded-full bg-ink-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-500" onClick={async () => { await apiPatch(`/api/resumes/${candidateId}/correction`, { correctedJson: JSON.stringify({ updatedAt: Date.now() }) }); await load(); }}>
+                <button type="button" className="mt-4 inline-flex items-center rounded-full bg-ink-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-500" onClick={async () => { await apiPatch(`/api/recruitment/resumes/${candidate.resumeId}/correction`, { correctedJson: JSON.stringify({ updatedAt: Date.now() }) }); await load(); }}>
                   保存修正示例
                 </button>
               </div>

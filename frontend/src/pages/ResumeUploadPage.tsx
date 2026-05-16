@@ -9,9 +9,15 @@ const SUCCESS_MESSAGE = '简历上传成功, 交给大模型解析中...';
 
 export function ResumeUploadPage() {
   const { upload, isUploading, error } = useResumeUpload();
-  const [candidateId, setCandidateId] = useState<string | null>(null);
+  const [applicationId, setApplicationId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const { events, error: streamError } = useScreeningEvents(candidateId);
+  const { events, error: streamError } = useScreeningEvents(applicationId);
+
+  const defaultJobId = 'default-job';
+
+  useEffect(() => {
+    void fetch('/api/recruitment/jobs/default-job', { method: 'GET' }).catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     if (!toastMessage) {
@@ -29,12 +35,18 @@ export function ResumeUploadPage() {
         <UploadForm
           isUploading={isUploading}
           onSubmit={async (files, jdText, requiredSkills, preferredSkills) => {
-            const result = await upload(files, jdText, requiredSkills, preferredSkills);
-            setCandidateId(result[0]?.resumeId ?? null);
+            const result = await upload(
+              defaultJobId,
+              files,
+              jdText,
+              requiredSkills,
+              preferredSkills,
+            );
+            setApplicationId(result[0]?.applicationId ?? null);
             setToastMessage(SUCCESS_MESSAGE);
           }}
         />
-        <ScreeningProgress events={events} error={error ?? streamError} candidateId={candidateId} />
+        <ScreeningProgress events={events} error={error ?? streamError} candidateId={applicationId} />
       </main>
     </>
   );

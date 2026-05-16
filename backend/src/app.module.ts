@@ -8,9 +8,8 @@ import { createTypeOrmOptions } from './core/database/typeorm.config';
 import { PdfModule } from './core/pdf/pdf.module';
 import { StorageModule } from './core/storage/storage.module';
 import { SseModule } from './core/sse/sse.module';
-import { CandidateModule } from './modules/candidate/candidate.module';
-import { ResumeUploadModule } from './modules/resume-upload/resume-upload.module';
-import { ScreeningModule } from './modules/screening/screening.module';
+import { RecruitmentModule } from './modules/recruitment/recruitment.module';
+import { RecruitmentScreeningModule } from './modules/recruitment/infrastructure/external/recruitment-screening.module';
 import { UserModule } from './modules/user/user.module';
 
 @Module({
@@ -21,9 +20,8 @@ import { UserModule } from './modules/user/user.module';
     SseModule,
     PdfModule,
     BigModelModule,
-    ScreeningModule,
-    ResumeUploadModule,
-    CandidateModule,
+    RecruitmentScreeningModule,
+    RecruitmentModule,
     UserModule,
   ],
   controllers: [AppController],

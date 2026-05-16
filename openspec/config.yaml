@@ -8,6 +8,15 @@ context: |
   语言：中文（简体）
   所有产出物必须用简体中文撰写。
 
+project_context: |
+  这是一个后端使用nestjs，前端使用react的全栈项目
+  后端采用 NestJS + 企业级架构规范：
+  - core = 框架级、运行必需、全局启用、不可缺少
+  - common = 工具级、可复用、按需引入、非必需
+  - modules = 业务领域模块，按领域边界组织
+  - jobs = 后台任务、定时任务、队列消费逻辑
+  招聘相关复杂领域优先采用 api、application、domain、infrastructure 四层结构。
+
 # Per-artifact rules (optional)
 # Add custom rules for specific artifacts.
 # Example:

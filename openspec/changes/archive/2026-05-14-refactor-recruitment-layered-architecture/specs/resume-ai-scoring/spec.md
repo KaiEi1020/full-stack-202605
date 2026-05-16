@@ -1,8 +1,4 @@
-## Purpose
-
-TBD
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: 系统必须提供简历 AI 多维度评分结果
 系统 MUST 继续为单份简历生成结构化 AI 评分结果；在招聘领域重构后，评分请求的流程编排 MUST 归属到 `recruitment/application` 层，评分相关的领域规则 MUST 位于 `domain` 层，而模型调用、存储访问或第三方技术细节 MUST 位于 `infrastructure` 层。
@@ -13,7 +9,7 @@ TBD
 
 #### Scenario: 返回可展示的评分结果
 - **WHEN** 前端获取简历 AI 评分结果
-- **THEN** 系统必须继续以稳定字段名返回各维度分数，以便图表组件直接消费
+- **THEN** 系统必须继续以稳定字段名返回各维度分数，以便图表组件直接消费，而不因内部重构改变结果结构
 
 ### Requirement: 系统必须生成 AI 评语
 系统 MUST 继续为每份已完成评分的简历生成文字评语；重构后，评语生成的业务约束与结果语义 MUST 保持一致，且失败处理逻辑必须继续可识别。

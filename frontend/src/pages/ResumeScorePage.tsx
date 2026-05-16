@@ -3,7 +3,7 @@ import { ScoreChart } from '../components/ScoreChart';
 import { apiGet, apiPost } from '../lib/api';
 
 type ResumeScorePageProps = {
-  resumeId: string;
+  applicationId: string;
 };
 
 type ResumeDetail = {
@@ -18,7 +18,7 @@ type ResumeDetail = {
   }>;
 };
 
-export function ResumeScorePage({ resumeId }: ResumeScorePageProps) {
+export function ResumeScorePage({ applicationId }: ResumeScorePageProps) {
   const [resume, setResume] = useState<ResumeDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [scoring, setScoring] = useState(false);
@@ -27,7 +27,7 @@ export function ResumeScorePage({ resumeId }: ResumeScorePageProps) {
   const load = async () => {
     try {
       setLoading(true);
-      setResume(await apiGet<ResumeDetail | null>(`/api/resumes/${resumeId}`));
+      setResume(await apiGet<ResumeDetail | null>(`/api/recruitment/submissions/${applicationId}`));
       setError(null);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : '加载失败');
@@ -38,7 +38,7 @@ export function ResumeScorePage({ resumeId }: ResumeScorePageProps) {
 
   useEffect(() => {
     void load();
-  }, [resumeId]);
+  }, [applicationId]);
 
   const score = resume?.scores[0];
 
@@ -54,12 +54,12 @@ export function ResumeScorePage({ resumeId }: ResumeScorePageProps) {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight text-ink-950 dark:text-white">{resume?.name ?? '未命名简历'}</h2>
-            <p className="mt-2 text-sm text-ink-500 dark:text-slate-300">通过 `POST /api/resumes/:id/score` 获取最新评分。</p>
+            <p className="mt-2 text-sm text-ink-500 dark:text-slate-300">通过 `POST /api/recruitment/submissions/:id/score` 获取最新评分。</p>
           </div>
           <button type="button" className="inline-flex items-center rounded-full bg-ink-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-500 disabled:cursor-not-allowed disabled:bg-slate-400" disabled={scoring} onClick={async () => {
             try {
               setScoring(true);
-              await apiPost(`/api/resumes/${resumeId}/score`, { jdText: '通用岗位需求', requiredSkills: [], preferredSkills: [] });
+              await apiPost(`/api/recruitment/submissions/${applicationId}/score`, { jdText: '通用岗位需求', requiredSkills: [], preferredSkills: [] });
               await load();
             } catch (scoreError) {
               setError(scoreError instanceof Error ? scoreError.message : '评分失败');

@@ -1,8 +1,12 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { JobRequirementEntity } from '../../modules/candidate/entities/job-requirement.entity';
-import { ResumeEntity } from '../../modules/candidate/entities/resume.entity';
+import {
+  JobApplicationEntity,
+  JobEntity,
+  JobRequirementEntity,
+} from '../../modules/recruitment/domain/entity';
+import { ResumeEntity } from '../../modules/recruitment/domain/entity/resume.entity';
 import { UserEntity } from '../../modules/user/infrastructure/persistence/entities/user.entity';
 
 export function createTypeOrmOptions(): TypeOrmModuleOptions {
@@ -17,7 +21,13 @@ export function createTypeOrmOptions(): TypeOrmModuleOptions {
       writeFileSync(databasePath, Buffer.from(data));
     },
     database: loadDatabase(databasePath),
-    entities: [UserEntity, ResumeEntity, JobRequirementEntity],
+    entities: [
+      UserEntity,
+      ResumeEntity,
+      JobRequirementEntity,
+      JobEntity,
+      JobApplicationEntity,
+    ],
     synchronize: true,
     logging: false,
   };
