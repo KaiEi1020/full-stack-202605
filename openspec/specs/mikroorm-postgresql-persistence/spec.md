@@ -11,9 +11,18 @@
 - **WHEN** Nest 应用启动
 - **THEN** 系统 MUST 通过 MikroORM 建立与 PostgreSQL 的连接，解析 `DATABASE_URL`，并加载所有已注册的实体
 
-#### Scenario: 实体变更后自动同步 schema
+#### Scenario: 实体继承 BaseEntity
+- **WHEN** 定义新的实体类
+- **THEN** 系统 MUST 允许实体继承 `BaseEntity` 以获得统一的基础字段
+
+#### Scenario: Migration 配置必须正确
+- **WHEN** 开发者查看 MikroORM 配置文件
+- **THEN** 配置 MUST 指定 migrations 目录路径、命名规范和执行策略
+- **AND** 配置 MUST 注册 `BaseEntity` 到实体列表
+
+#### Scenario: 实体变更后使用 Migration 管理 Schema
 - **WHEN** 应用启动且实体定义与现有表结构不一致
-- **THEN** 系统 MUST 自动调整 PostgreSQL schema 以匹配实体定义（开发环境）
+- **THEN** 系统 MUST 不自动调整 schema，而是通过 MikroORM Migrations 显式管理 schema 变更
 
 ### Requirement: MikroORM 必须通过官方 NestJS 模块集成
 系统 MUST 使用 `@mikro-orm/nestjs` 提供的 `MikroOrmModule` 完成全局与模块级的 ORM 注册。
