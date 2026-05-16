@@ -6,3 +6,4 @@ node_modules
 *.tar.gz
 dist-deploy/
 .DS_Store
+postgres/
