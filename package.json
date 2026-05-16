@@ -8,6 +8,10 @@
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "test": "pnpm --filter backend test",
+    "db:up": "docker compose -f docker-compose.local.yml up -d",
+    "db:down": "docker compose -f docker-compose.local.yml down",
+    "db:logs": "docker compose -f docker-compose.local.yml logs -f db",
+    "db:reset": "docker compose -f docker-compose.local.yml down -v && docker compose -f docker-compose.local.yml up -d",
     "deploy:cvm:pack": "node ./scripts/pack-cvm.mjs",
     "deploy:cvm:transfer": "node ./scripts/transfer-cvm.mjs",
     "deploy:cvm": "bash ./deploy-cvm.sh all"
