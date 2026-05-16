@@ -11,6 +11,7 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { RecruitmentService } from '../../application/service/recruitment.service';
 import { JobApplicationUploadService } from '../../application/service/job-application-upload.service';
+import { CreateJobDto } from '../dto/create-job.dto';
 
 @Controller('api/recruitment/jobs')
 export class RecruitmentController {
@@ -44,16 +45,7 @@ export class RecruitmentController {
   }
 
   @Post()
-  createJob(
-    @Body()
-    body: {
-      id?: string;
-      title: string;
-      description: string;
-      requiredSkills?: string[];
-      preferredSkills?: string[];
-    },
-  ) {
+  createJob(@Body() body: CreateJobDto) {
     return this.recruitmentService.createJob({
       id: body.id,
       title: body.title,
