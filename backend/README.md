@@ -195,6 +195,122 @@ src/
 | 覆盖率 | `pnpm test:cov` |
 | 重置本地数据库 | `pnpm db:reset` |
 
+## 数据库迁移
+
+项目使用 MikroORM Migrations 管理数据库 schema 变更。
+
+### 快速使用
+
+```bash
+# 创建新的 migration
+pnpm migration:create
+
+# 执行 migrations
+pnpm migration:up
+
+# 回滚 migration
+pnpm migration:down
+
+# 查看 migration 状态
+pnpm migration:status
+```
+
+### Migration 命令
+
+| 命令 | 说明 |
+| --- | --- |
+| `pnpm migration:create` | 创建新的 migration（自动检测实体变更） |
+| `pnpm migration:up` | 执行所有 pending migrations |
+| `pnpm migration:down` | 回滚最后一个 migration |
+| `pnpm migration:status` | 查看 migration 状态 |
+| `pnpm migration:fresh` | 重置数据库并重新执行所有 migrations |
+
+### Migration 工作流
+
+1. **修改实体**：在 `src/modules/*/infrastructure/persistence/entities/` 中修改实体定义
+2. **创建 migration**：运行 `pnpm migration:create`，MikroORM 会自动检测变更并生成 migration 文件
+3. **审查 migration**：检查生成的 migration 文件（位于 `migrations/` 目录）
+4. **执行 migration**：运行 `pnpm migration:up` 应用变更到数据库
+5. **提交代码**：将 migration 文件和实体变更一起提交到 Git
+
+### Migration 最佳实践
+
+- **命名清晰**：创建 migration 时使用 `--name` 参数，如 `pnpm migration:create --name add-user-index`
+- **审查 SQL**：执行前仔细审查生成的 SQL 语句
+- **测试回滚**：在开发环境测试 `migration:down` 确保可以回滚
+- **数据安全**：生产环境执行前先备份数据库
+- **版本控制**：所有 migration 文件必须提交到 Git
+
+### Migration 文件位置
+
+```
+backend/
+└── migrations/
+    ├── 20260516102026-migration.ts
+    └── ...
+```
+
+### 注意事项
+
+- 不要手动修改已执行的 migration 文件
+- 生产环境部署前必须先执行 migrations
+- 修改实体后必须创建对应的 migration
+- Migration 文件使用时间戳命名，确保执行顺序
+
+## BaseEntity 基础实体
+
+项目使用 `BaseEntity` 抽象类统一管理所有实体的基础字段。
+
+### 基础字段
+
+所有继承 `BaseEntity` 的实体自动获得以下字段：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | `string` (UUID) | 主键，自动生成 |
+| `createdAt` | `Date` | 创建时间，自动填充 |
+| `updatedAt` | `Date` | 更新时间，自动更新 |
+| `deletedAt` | `Date?` | 软删除时间，可为空 |
+
+### 使用示例
+
+```typescript
+import { Entity, Property } from '@mikro-orm/decorators/legacy';
+import { BaseEntity } from '../../../../../common/entities/base.entity';
+
+@Entity({ tableName: 'users' })
+export class UserEntity extends BaseEntity {
+  @Property()
+  name: string = '';
+
+  @Property()
+  email: string = '';
+}
+```
+
+### 软删除使用
+
+```typescript
+// 软删除：设置 deletedAt 字段
+entity.deletedAt = new Date();
+await em.flush();
+
+// 查询时过滤已删除记录
+const activeUsers = await em.find(UserEntity, { 
+  deletedAt: null 
+});
+
+// 查询所有记录（包括已删除）
+const allUsers = await em.find(UserEntity, {});
+```
+
+### 注意事项
+
+- 所有新实体都应该继承 `BaseEntity`
+- 不要在实体中重复定义基础字段
+- 软删除需要手动过滤，不会自动过滤
+- 创建实体时需要显式提供 `createdAt` 和 `updatedAt` 字段
+
 ## 开发流程
 
 | 步骤 | 说明 |
